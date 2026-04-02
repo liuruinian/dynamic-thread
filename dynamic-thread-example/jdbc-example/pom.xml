@@ -29,6 +29,12 @@
             <artifactId>dynamic-thread-web-spring-boot-starter</artifactId>
         </dependency>
 
+        <!-- Agent for connecting to Dashboard Server -->
+        <dependency>
+            <groupId>com.dynamic.thread</groupId>
+            <artifactId>dynamic-thread-agent</artifactId>
+        </dependency>
+
         <!-- H2 Database for demo -->
         <dependency>
             <groupId>com.h2database</groupId>

@@ -29,6 +29,12 @@
             <artifactId>dynamic-thread-web-spring-boot-starter</artifactId>
         </dependency>
 
+        <!-- Agent for connecting to Dashboard Server -->
+        <dependency>
+            <groupId>com.dynamic.thread</groupId>
+            <artifactId>dynamic-thread-agent</artifactId>
+        </dependency>
+
         <!-- Spring Boot Actuator -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

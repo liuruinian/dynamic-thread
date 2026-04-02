@@ -5,9 +5,9 @@
 dynamic-thread:
   executors:
     - thread-pool-id: order-executor
-      core-pool-size: 10
-      maximum-pool-size: 20
-      queue-capacity: 1000
+      core-pool-size: 20
+      maximum-pool-size: 40
+      queue-capacity: 3000
       keep-alive-time: 60
       rejected-handler: CallerRunsPolicy
       alarm:

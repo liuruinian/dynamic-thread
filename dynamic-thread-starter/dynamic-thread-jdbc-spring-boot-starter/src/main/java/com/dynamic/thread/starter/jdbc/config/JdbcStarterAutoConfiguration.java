@@ -5,10 +5,12 @@ import com.dynamic.thread.starter.common.refresher.ThreadPoolRefresher;
 import com.dynamic.thread.starter.jdbc.listener.JdbcConfigChangeListener;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -21,6 +23,7 @@ import javax.sql.DataSource;
  */
 @Configuration
 @EnableScheduling
+@AutoConfigureAfter(JdbcTemplateAutoConfiguration.class)
 @ConditionalOnClass({DataSource.class, JdbcTemplate.class})
 @ConditionalOnProperty(prefix = "dynamic-thread", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class JdbcStarterAutoConfiguration {
