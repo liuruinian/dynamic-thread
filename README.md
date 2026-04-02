@@ -486,6 +486,331 @@ cd dynamic-thread-example/nacos-cloud-example
 mvn spring-boot:run
 ```
 
+## 核心技术实现
+
+### 1. 动态线程池执行器 (DynamicThreadPoolExecutor)
+
+继承 `ThreadPoolExecutor`，增强动态配置能力：
+
+```java
+@Slf4j
+public class DynamicThreadPoolExecutor extends ThreadPoolExecutor {
+    
+    private final String threadPoolId;
+    private volatile AlarmConfig alarmConfig;
+    private volatile RejectedExecutionHandlerProxy rejectionProxy;
+    
+    // 运行时动态更新配置
+    public ConfigChangeResult updateConfig(ThreadPoolConfig config) {
+        // 动态调整 corePoolSize、maximumPoolSize、keepAliveTime
+        // 动态调整队列容量（需配合 VariableLinkedBlockingQueue）
+        // 动态切换拒绝策略
+    }
+    
+    // 获取线程池实时状态快照
+    public ThreadPoolState getState() {
+        // 返回包含所有指标的状态对象
+    }
+}
+```
+
+**核心特性：**
+- 运行时参数热更新，无需重启
+- 内置告警检测，支持阈值监控
+- 拒绝策略代理，实现精细化统计
+- 支持自定义 RetryBufferPolicy 缓冲重试策略
+
+### 2. 可变容量阻塞队列 (VariableLinkedBlockingQueue)
+
+基于 JDK `LinkedBlockingQueue` 改造，支持运行时容量调整：
+
+```java
+public class VariableLinkedBlockingQueue<E> extends AbstractQueue<E>
+        implements BlockingQueue<E> {
+    
+    // 关键改动：capacity 使用 volatile 而非 final
+    private volatile int capacity;
+    
+    /**
+     * 动态调整队列容量
+     * 如果新容量小于当前元素数，队列将停止接收新元素直到元素数降至新容量以下
+     */
+    public void setCapacity(int capacity) {
+        // 线程安全的容量调整实现
+    }
+}
+```
+
+**设计参考：** RabbitMQ `VariableLinkedBlockingQueue` 实现
+
+### 3. 暂存重试拒绝策略 (RetryBufferPolicy)
+
+当任务被拒绝时，不立即失败或丢弃，而是暂存并择机重投：
+
+```java
+public class RetryBufferPolicy implements RejectedExecutionHandler {
+    
+    private final BlockingQueue<BufferedTask> taskBuffer;  // 有界缓冲队列
+    private final ScheduledExecutorService scheduler;       // 重试调度器
+    
+    @Override
+    public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+        // 1. 尝试放入缓冲区
+        // 2. 缓冲区满则使用 CallerRunsPolicy 兜底
+        // 3. 定时检测线程池空闲，自动重投缓冲任务
+    }
+}
+```
+
+**适用场景：**
+- 瞬时流量高峰超出线程池容量
+- 任务不允许丢失或立即失败
+- 系统可接受一定执行延迟
+
+**配置参数：**
+```yaml
+dynamic-thread:
+  executors:
+    - thread-pool-id: order-executor
+      rejected-handler: RetryBufferPolicy
+      retry-buffer-config:
+        buffer-capacity: 500        # 缓冲区容量
+        retry-interval-ms: 1000     # 重试间隔(ms)
+        max-retry-count: 3          # 最大重试次数
+        max-buffer-time-ms: 30000   # 最大缓冲时间(ms)
+        idle-threshold: 0.5         # 空闲阈值
+```
+
+### 4. 线程池注册中心 (ThreadPoolRegistry)
+
+全局单例管理所有动态线程池：
+
+```java
+public class ThreadPoolRegistry implements IThreadPoolRegistry {
+    
+    private static final ThreadPoolRegistry INSTANCE = new ThreadPoolRegistry();
+    private final Map<String, DynamicThreadPoolExecutor> registry = new ConcurrentHashMap<>();
+    
+    // 注册线程池
+    public void register(String threadPoolId, DynamicThreadPoolExecutor executor);
+    
+    // 更新配置并返回变更结果
+    public ConfigChangeResult updateConfig(String threadPoolId, ThreadPoolConfig config);
+    
+    // 获取所有线程池状态
+    public Map<String, ThreadPoolState> listStates();
+}
+```
+
+### 5. 配置监听器架构
+
+统一的配置变更监听抽象：
+
+```java
+public abstract class AbstractConfigChangeListener {
+    
+    protected final ThreadPoolRefresher refresher;
+    
+    // 启动监听
+    public abstract void startListening();
+    
+    // 停止监听
+    public abstract void stopListening();
+    
+    // 触发配置刷新
+    protected void refreshConfig(String configContent, ConfigFileType fileType) {
+        List<ThreadPoolConfig> configs = ConfigParser.parse(configContent, fileType);
+        refresher.refresh(configs);
+    }
+}
+```
+
+**实现类：**
+| 监听器 | 配置源 | 监听方式 |
+|--------|--------|----------|
+| `NacosCloudConfigChangeListener` | Nacos | 长连接推送 |
+| `ApolloConfigChangeListener` | Apollo | SDK 回调 |
+| `EtcdConfigChangeListener` | ETCD | Watch 机制 |
+| `JdbcConfigChangeListener` | 数据库 | 定时轮询 |
+| `FileConfigChangeListener` | 本地文件 | WatchService |
+
+### 6. Agent 通信机制
+
+基于 Netty 的客户端-服务端通信：
+
+```
+┌─────────────────┐         TCP (9527)          ┌─────────────────┐
+│   App Instance  │ ◄──────────────────────────► │ Dashboard Server│
+│                 │                              │                 │
+│  ┌───────────┐  │    心跳上报 (5s)             │  ┌───────────┐  │
+│  │   Agent   │──┼─── 线程池状态 ──────────────►│  │  Netty    │  │
+│  │  Client   │  │                              │  │  Server   │  │
+│  │           │◄─┼─── 配置下发/指令 ────────────│  │           │  │
+│  └───────────┘  │                              │  └───────────┘  │
+└─────────────────┘                              └─────────────────┘
+```
+
+**协议格式：** 自定义二进制协议 + JSON 序列化
+
+## 扩展点
+
+### 1. 自定义配置源
+
+实现 `AbstractConfigChangeListener` 即可接入新的配置源：
+
+```java
+public class CustomConfigChangeListener extends AbstractConfigChangeListener {
+    
+    public CustomConfigChangeListener(ThreadPoolRefresher refresher) {
+        super(refresher);
+    }
+    
+    @Override
+    public void startListening() {
+        // 实现配置源连接和监听逻辑
+        // 配置变更时调用 refreshConfig(content, fileType)
+    }
+    
+    @Override
+    public void stopListening() {
+        // 释放资源
+    }
+}
+```
+
+**注册方式：** Spring Boot 自动配置或手动注册 Bean
+
+### 2. 自定义拒绝策略
+
+实现 `RejectedExecutionHandler` 接口：
+
+```java
+public class CustomRejectPolicy implements RejectedExecutionHandler {
+    
+    @Override
+    public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+        // 自定义处理逻辑：日志、告警、持久化、降级等
+    }
+}
+```
+
+**配置使用：**
+```java
+@Bean
+@DynamicThreadPool("custom-pool")
+public DynamicThreadPoolExecutor customPool() {
+    return new DynamicThreadPoolExecutor(
+        "custom-pool", 10, 20, 60, TimeUnit.SECONDS,
+        new ResizableCapacityLinkedBlockingQueue<>(1000),
+        new CustomRejectPolicy()  // 使用自定义策略
+    );
+}
+```
+
+### 3. 自定义通知平台
+
+实现 `NotifyPlatform` 接口接入新的通知渠道：
+
+```java
+public class CustomNotifyPlatform implements NotifyPlatform {
+    
+    @Override
+    public String getName() {
+        return "CUSTOM";
+    }
+    
+    @Override
+    public void send(AlarmMessage message) {
+        // 实现消息发送：邮件、短信、Slack、飞书等
+    }
+}
+```
+
+### 4. 自定义 Web 容器适配器
+
+实现 `WebContainerAdapter` 接口适配新的 Web 容器：
+
+```java
+public class CustomContainerAdapter implements WebContainerAdapter {
+    
+    @Override
+    public boolean supports() {
+        // 判断当前环境是否使用该容器
+    }
+    
+    @Override
+    public WebContainerState getState() {
+        // 获取容器线程池状态
+    }
+    
+    @Override
+    public void updateConfig(WebContainerConfig config) {
+        // 动态更新容器线程池配置
+    }
+}
+```
+
+### 5. 自定义告警规则
+
+通过 Dashboard API 或配置文件定义告警规则：
+
+```yaml
+dynamic-thread:
+  alarm:
+    rules:
+      - name: "队列高水位告警"
+        metric: QUEUE_USAGE
+        operator: GREATER_THAN
+        threshold: 80
+        duration: 60
+        actions:
+          - platform: DING
+            template: "线程池 ${poolId} 队列使用率 ${value}%"
+```
+
+## 设计模式应用
+
+| 模式 | 应用场景 | 实现位置 |
+|------|----------|----------|
+| **单例模式** | 线程池注册中心 | `ThreadPoolRegistry` |
+| **模板方法** | 配置监听器抽象 | `AbstractConfigChangeListener` |
+| **代理模式** | 拒绝策略统计 | `RejectedExecutionHandlerProxy` |
+| **策略模式** | 多种拒绝策略 | `RejectedExecutionHandler` 实现 |
+| **观察者模式** | 配置变更通知 | `ConfigChangeEvent` |
+| **工厂模式** | 线程池创建 | `DynamicThreadPoolExecutor.create()` |
+| **建造者模式** | 配置对象构建 | `ThreadPoolConfig.builder()` |
+| **适配器模式** | Web 容器适配 | `TomcatAdapter` / `JettyAdapter` |
+
+## 性能优化
+
+### 1. 线程池参数调优建议
+
+```yaml
+# CPU 密集型任务
+core-pool-size: ${CPU_CORES}           # 等于 CPU 核心数
+maximum-pool-size: ${CPU_CORES + 1}    # 略大于核心数
+queue-capacity: 100                     # 较小队列，快速拒绝
+
+# IO 密集型任务
+core-pool-size: ${CPU_CORES * 2}       # 2 倍 CPU 核心数
+maximum-pool-size: ${CPU_CORES * 4}    # 4 倍 CPU 核心数
+queue-capacity: 1000                    # 较大队列缓冲
+
+# 混合型任务
+core-pool-size: ${CPU_CORES}           # 根据 IO/CPU 比例调整
+maximum-pool-size: ${CPU_CORES * 2}
+queue-capacity: 500
+```
+
+### 2. 监控指标关注点
+
+| 指标 | 健康阈值 | 告警阈值 |
+|------|----------|----------|
+| 队列使用率 | < 50% | > 80% |
+| 活跃线程率 | < 70% | > 90% |
+| 拒绝任务数 | 0 | > 0 |
+| 任务平均耗时 | < 100ms | > 500ms |
+
 ## 许可证
 
 [Apache License 2.0](LICENSE)
@@ -499,3 +824,10 @@ mvn spring-boot:run
 3. 提交更改：`git commit -m 'Add some feature'`
 4. 推送分支：`git push origin feature/your-feature`
 5. 提交 Pull Request
+
+## 参考资料
+
+- [JDK ThreadPoolExecutor 源码](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ThreadPoolExecutor.html)
+- [RabbitMQ VariableLinkedBlockingQueue](https://github.com/rabbitmq/rabbitmq-java-client)
+- [Nacos 配置中心](https://nacos.io/)
+- [Apollo 配置中心](https://www.apolloconfig.com/)
