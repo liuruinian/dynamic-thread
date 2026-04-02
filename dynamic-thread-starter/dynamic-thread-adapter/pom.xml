@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.dynamic.thread</groupId>
+        <artifactId>dynamic-thread-starter</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>dynamic-thread-adapter</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Dynamic Thread Pool Adapter</name>
+    <description>Adapter aggregation module for web container thread pool</description>
+
+    <modules>
+        <module>dynamic-thread-web-spring-boot-starter</module>
+    </modules>
+
+</project>

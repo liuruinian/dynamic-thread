@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.dynamic.thread</groupId>
+        <artifactId>dynamic-thread</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>dynamic-thread-starter</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Dynamic Thread Pool Starter</name>
+    <description>Starter aggregation module for dynamic thread pool with configuration center integration</description>
+
+    <modules>
+        <module>dynamic-thread-common-spring-boot-starter</module>
+        <module>dynamic-thread-nacos-cloud-spring-boot-starter</module>
+        <module>dynamic-thread-apollo-spring-boot-starter</module>
+        <module>dynamic-thread-file-spring-boot-starter</module>
+        <module>dynamic-thread-jdbc-spring-boot-starter</module>
+        <module>dynamic-thread-etcd-spring-boot-starter</module>
+        <module>dynamic-thread-adapter</module>
+    </modules>
+
+</project>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.dynamic.thread</groupId>
+        <artifactId>dynamic-thread</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>dynamic-thread-example</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Dynamic Thread Pool Example</name>
+    <description>Example projects demonstrating dynamic thread pool features</description>
+
+    <!-- Skip publishing to Maven Central -->
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.install.skip>true</maven.install.skip>
+    </properties>
+
+    <modules>
+        <module>nacos-cloud-example</module>
+        <module>apollo-example</module>
+        <module>file-example</module>
+        <module>jdbc-example</module>
+        <module>etcd-example</module>
+    </modules>
+
+</project>

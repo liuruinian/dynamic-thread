@@ -1,0 +1,106 @@
+# =============================================================================
+# Dynamic Thread Pool Dashboard Server Configuration
+# =============================================================================
+
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: dynamic-thread-server
+
+# -----------------------------------------------------------------------------
+# SaToken Authentication Configuration
+# -----------------------------------------------------------------------------
+sa-token:
+  token-name: satoken
+  timeout: 86400              # Token validity: 24 hours (seconds)
+  active-timeout: -1          # No activity timeout
+  is-concurrent: true         # Allow concurrent login
+  is-share: true              # Share token across devices
+  token-style: uuid
+  is-log: false
+
+# -----------------------------------------------------------------------------
+# Dynamic Thread Pool Server Configuration
+# -----------------------------------------------------------------------------
+dynamic-thread:
+  server:
+    # Dashboard login credentials
+    auth:
+      username: ${DASHBOARD_USERNAME:admin}
+      password: ${DASHBOARD_PASSWORD:admin123}
+    
+    # Netty server for agent communication
+    netty:
+      port: ${NETTY_PORT:9527}
+      boss-threads: 1
+      worker-threads: ${NETTY_WORKER_THREADS:4}
+      read-idle-timeout: 90   # seconds
+      # SSL/TLS configuration (optional)
+      ssl-enabled: ${NETTY_SSL_ENABLED:false}
+      ssl-cert-path: ${NETTY_SSL_CERT_PATH:}
+      ssl-key-path: ${NETTY_SSL_KEY_PATH:}
+    
+    # Security configuration
+    security:
+      # Connection limits
+      max-connections: ${MAX_CONNECTIONS:10000}
+      max-connections-per-ip: ${MAX_CONNECTIONS_PER_IP:100}
+      max-connections-per-app: ${MAX_CONNECTIONS_PER_APP:500}
+      connect-rate-limit-per-minute: ${CONNECT_RATE_LIMIT:60}
+      # Login protection
+      max-login-attempts: ${MAX_LOGIN_ATTEMPTS:5}
+      login-lockout-minutes: ${LOGIN_LOCKOUT_MINUTES:15}
+      # Agent authentication (HMAC-SHA256)
+      agent-auth-enabled: ${AGENT_AUTH_ENABLED:false}
+      agent-secret-key: ${AGENT_SECRET_KEY:dynamic-thread-default-secret-key-change-in-production}
+    
+    # Notification platforms (all support environment variable override)
+    notify-platforms:
+      # DingTalk Robot
+      - platform: DING
+        url: ${DINGTALK_WEBHOOK:https://oapi.dingtalk.com/robot/send?access_token=0a6bedfbad62f68c270e7926ebef7ae9ab7f6bc26be469cf4221d7933eb34f28}
+        secret: ${DINGTALK_SECRET:SEC43919143b99316edc6a155d641ee24e0d3c0dccb7b089449acb685f12452c211}
+      
+      # WeChatWork Robot
+      - platform: WECHAT
+        url: ${WECHAT_WEBHOOK:}
+      
+      # Email
+      - platform: EMAIL
+        smtpHost: ${EMAIL_SMTP_HOST:}
+        smtpPort: ${EMAIL_SMTP_PORT:}
+        username: ${EMAIL_USERNAME:}
+        password: ${EMAIL_PASSWORD:}
+        fromAddress: ${EMAIL_FROM:}
+        toAddresses: ${EMAIL_TO:}
+        ssl: ${EMAIL_SSL:}
+
+# -----------------------------------------------------------------------------
+# Logging Configuration (detailed config in logback-spring.xml)
+# -----------------------------------------------------------------------------
+logging:
+  level:
+    root: INFO
+    com.dynamic.thread: ${LOG_LEVEL:DEBUG}
+  file:
+    path: ${LOG_PATH:logs}
+
+# -----------------------------------------------------------------------------
+# Actuator & Prometheus Metrics Configuration
+# -----------------------------------------------------------------------------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}

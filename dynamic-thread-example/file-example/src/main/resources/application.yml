@@ -1,0 +1,33 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: file-example
+
+# Dynamic Thread Pool Configuration
+dynamic-thread:
+  enabled: true
+  banner: true
+  config-file-type: YAML
+  # Local file configuration
+  file:
+    # Path to the thread pool configuration file
+    # The file will be watched for changes
+    path: config/thread-pool.yaml
+    config-type: YAML
+
+# Actuator endpoints for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# Logging
+logging:
+  level:
+    com.dynamic.thread: DEBUG

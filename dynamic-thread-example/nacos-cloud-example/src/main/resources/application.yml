@@ -1,0 +1,83 @@
+# =============================================================================
+# Dynamic Thread Pool - Nacos Cloud Example Configuration
+# =============================================================================
+
+server:
+  port: ${SERVER_PORT:8081}
+  shutdown: graceful
+
+spring:
+  application:
+    name: nacos-cloud-example
+  lifecycle:
+    timeout-per-shutdown-phase: 60s
+
+# -----------------------------------------------------------------------------
+# Dynamic Thread Pool Configuration
+# -----------------------------------------------------------------------------
+dynamic-thread:
+  enabled: true
+  banner: true
+  config-file-type: YAML
+  
+  # Nacos config source
+  nacos:
+    data-id: dynamic-thread-config.yaml
+    group: DEFAULT_GROUP
+  
+  # Agent reporting to Dashboard Server
+  agent:
+    enabled: true
+    app-id: ${spring.application.name}
+    server:
+      host: ${DASHBOARD_HOST:127.0.0.1}
+      port: ${DASHBOARD_PORT:9527}
+    report:
+      interval: 5
+  
+  # Thread pool definitions
+  executors:
+    - thread-pool-id: onethread-producer
+      core-pool-size: 10
+      maximum-pool-size: 20
+      queue-capacity: 1000
+      work-queue: ResizableCapacityLinkedBlockingQueue
+      rejected-handler: CallerRunsPolicy
+      keep-alive-time: 60
+      alarm:
+        enable: true
+        queue-threshold: 80
+        active-threshold: 80
+    
+    - thread-pool-id: onethread-consumer
+      core-pool-size: 5
+      maximum-pool-size: 15
+      queue-capacity: 500
+      alarm:
+        enable: true
+        queue-threshold: 80
+
+# -----------------------------------------------------------------------------
+# Actuator & Metrics Configuration
+# -----------------------------------------------------------------------------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,shutdown
+  endpoint:
+    health:
+      show-details: always
+    shutdown:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# -----------------------------------------------------------------------------
+# Logging Configuration
+# -----------------------------------------------------------------------------
+logging:
+  level:
+    com.dynamic.thread: ${LOG_LEVEL:DEBUG}

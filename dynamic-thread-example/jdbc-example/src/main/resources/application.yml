@@ -1,0 +1,47 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: jdbc-example
+  # H2 Database configuration
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
+
+# Dynamic Thread Pool Configuration
+dynamic-thread:
+  enabled: true
+  banner: true
+  config-file-type: YAML
+  # JDBC configuration
+  jdbc:
+    table-name: dynamic_thread_config
+    config-key: default
+    poll-interval: 10000  # Poll every 10 seconds
+
+# Actuator endpoints for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# Logging
+logging:
+  level:
+    com.dynamic.thread: DEBUG

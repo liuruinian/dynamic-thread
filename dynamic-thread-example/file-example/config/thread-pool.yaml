@@ -1,0 +1,27 @@
+# Thread Pool Configuration File
+# This file is monitored by the file configuration listener
+# Any changes to this file will trigger automatic thread pool refresh
+
+dynamic-thread:
+  executors:
+    - thread-pool-id: order-executor
+      core-pool-size: 10
+      maximum-pool-size: 20
+      queue-capacity: 1000
+      keep-alive-time: 60
+      rejected-handler: CallerRunsPolicy
+      alarm:
+        enable: true
+        queue-threshold: 80
+        active-threshold: 90
+
+    - thread-pool-id: payment-executor
+      core-pool-size: 5
+      maximum-pool-size: 10
+      queue-capacity: 500
+      keep-alive-time: 120
+      rejected-handler: AbortPolicy
+      alarm:
+        enable: true
+        queue-threshold: 70
+        active-threshold: 85

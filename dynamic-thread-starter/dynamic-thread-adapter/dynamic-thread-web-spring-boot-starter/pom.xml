@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.dynamic.thread</groupId>
+        <artifactId>dynamic-thread-adapter</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>dynamic-thread-web-spring-boot-starter</artifactId>
+    <packaging>jar</packaging>
+
+    <name>Dynamic Thread Pool Web Starter</name>
+    <description>Web container (Tomcat/Jetty) thread pool adapter</description>
+
+    <dependencies>
+        <!-- Common Starter -->
+        <dependency>
+            <groupId>com.dynamic.thread</groupId>
+            <artifactId>dynamic-thread-common-spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- Agent (optional - for reporter integration) -->
+        <dependency>
+            <groupId>com.dynamic.thread</groupId>
+            <artifactId>dynamic-thread-agent</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Spring Boot Web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Tomcat (optional) -->
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Jetty (optional) -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Undertow (optional) -->
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.xnio</groupId>
+            <artifactId>xnio-api</artifactId>
+            <version>3.8.8.Final</version>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Micrometer (optional - for metrics) -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+</project>

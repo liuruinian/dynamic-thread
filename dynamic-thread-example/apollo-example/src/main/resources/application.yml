@@ -1,0 +1,60 @@
+# =============================================================================
+# Dynamic Thread Pool - Apollo Example Configuration
+# =============================================================================
+
+server:
+  port: ${SERVER_PORT:8081}
+
+spring:
+  application:
+    name: apollo-example
+
+# -----------------------------------------------------------------------------
+# Apollo Configuration
+# -----------------------------------------------------------------------------
+app:
+  id: apollo-example
+
+apollo:
+  meta: ${APOLLO_META:http://127.0.0.1:8080}
+  bootstrap:
+    enabled: true
+    namespaces: application
+
+# -----------------------------------------------------------------------------
+# Dynamic Thread Pool Configuration
+# -----------------------------------------------------------------------------
+dynamic-thread:
+  enabled: true
+  banner: true
+  config-file-type: PROPERTIES
+  
+  # Apollo config source
+  apollo:
+    namespace: application
+  
+  # Thread pool definitions
+  executors:
+    - thread-pool-id: apollo-producer
+      core-pool-size: 8
+      maximum-pool-size: 16
+      queue-capacity: 800
+      work-queue: ResizableCapacityLinkedBlockingQueue
+      rejected-handler: CallerRunsPolicy
+      keep-alive-time: 60
+
+# -----------------------------------------------------------------------------
+# Actuator Configuration
+# -----------------------------------------------------------------------------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+# -----------------------------------------------------------------------------
+# Logging Configuration
+# -----------------------------------------------------------------------------
+logging:
+  level:
+    com.dynamic.thread: ${LOG_LEVEL:DEBUG}

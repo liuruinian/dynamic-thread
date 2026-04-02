@@ -1,0 +1,38 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: etcd-example
+
+# Dynamic Thread Pool Configuration
+dynamic-thread:
+  enabled: true
+  banner: true
+  config-file-type: YAML
+  # ETCD configuration
+  etcd:
+    # ETCD server endpoints (comma separated for cluster)
+    endpoints: http://localhost:2379
+    # Key prefix for thread pool configuration
+    key-prefix: /dynamic-thread/config
+    # Authentication (optional)
+    # username: root
+    # password: secret
+    # Configuration type
+    config-type: YAML
+
+# Actuator endpoints for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# Logging
+logging:
+  level:
+    com.dynamic.thread: DEBUG

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Maven settings.xml 配置模板
+  将此文件复制到 ~/.m2/settings.xml 或合并配置到已有的 settings.xml 中
+-->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
+
+    <servers>
+        <!-- 
+            Central Portal 凭证配置
+            username: 在 https://central.sonatype.com 生成的 Token username
+            password: 在 https://central.sonatype.com 生成的 Token password
+        -->
+        <server>
+            <id>central</id>
+            <username>YOUR_TOKEN_USERNAME</username>
+            <password>YOUR_TOKEN_PASSWORD</password>
+        </server>
+
+        <!-- 
+            GPG 密钥配置（可选，如果 gpg 命令行已配置则可省略）
+        -->
+        <!-- 
+        <server>
+            <id>gpg.passphrase</id>
+            <passphrase>YOUR_GPG_PASSPHRASE</passphrase>
+        </server>
+        -->
+    </servers>
+
+    <profiles>
+        <profile>
+            <id>gpg</id>
+            <properties>
+                <!-- 
+                    GPG 可执行文件路径（如果不在 PATH 中需要配置）
+                    Windows 示例: C:/Program Files (x86)/GnuPG/bin/gpg.exe
+                    Linux/Mac 示例: /usr/local/bin/gpg
+                -->
+                <!-- <gpg.executable>gpg</gpg.executable> -->
+                
+                <!-- GPG 密钥 ID（可选，不指定则使用默认密钥） -->
+                <!-- <gpg.keyname>YOUR_KEY_ID</gpg.keyname> -->
+            </properties>
+        </profile>
+    </profiles>
+
+    <!-- 发布时自动激活 gpg profile -->
+    <activeProfiles>
+        <activeProfile>gpg</activeProfile>
+    </activeProfiles>
+
+</settings>
