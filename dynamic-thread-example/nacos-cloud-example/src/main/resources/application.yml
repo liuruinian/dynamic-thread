@@ -70,9 +70,9 @@ management:
       show-details: always
     shutdown:
       enabled: true
-  metrics:
-    export:
-      prometheus:
+  prometheus:
+    metrics:
+      export:
         enabled: true
 
 # -----------------------------------------------------------------------------

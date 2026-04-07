@@ -4,14 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.dynamic.thread</groupId>
+    <groupId>io.github.liuruinian</groupId>
     <artifactId>dynamic-thread</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
 
     <name>Dynamic Thread Pool</name>
     <description>A dynamic, observable Java thread pool framework with configuration center integration for real-time parameter tuning, monitoring, and alerting</description>
-    <url>https://github.com/your-username/dynamic-thread</url>
+    <url>https://github.com/liuruinian/dynamic-thread</url>
 
     <!-- License -->
     <licenses>
@@ -25,9 +25,9 @@
     <!-- Developers -->
     <developers>
         <developer>
-            <id>your-id</id>
-            <name>Your Name</name>
-            <email>your-email@example.com</email>
+            <id>liuruinian</id>
+            <name>Liuruinian</name>
+            <email>liuruinian@foxmail.com</email>
             <roles>
                 <role>developer</role>
             </roles>
@@ -36,15 +36,15 @@
 
     <!-- SCM -->
     <scm>
-        <connection>scm:git:git://github.com/your-username/dynamic-thread.git</connection>
-        <developerConnection>scm:git:ssh://github.com:your-username/dynamic-thread.git</developerConnection>
-        <url>https://github.com/your-username/dynamic-thread/tree/main</url>
+        <connection>scm:git:git://github.com/liuruinian/dynamic-thread.git</connection>
+        <developerConnection>scm:git:ssh://github.com:liuruinian/dynamic-thread.git</developerConnection>
+        <url>https://github.com/liuruinian/dynamic-thread/tree/main</url>
     </scm>
 
     <!-- Issue Management -->
     <issueManagement>
         <system>GitHub Issues</system>
-        <url>https://github.com/your-username/dynamic-thread/issues</url>
+        <url>https://github.com/liuruinian/dynamic-thread/issues</url>
     </issueManagement>
 
     <modules>
