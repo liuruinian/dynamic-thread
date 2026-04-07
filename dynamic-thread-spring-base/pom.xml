@@ -19,7 +19,7 @@
     <dependencies>
         <!-- Core Module -->
         <dependency>
-            <groupId>com.dynamic.thread</groupId>
+            <groupId>io.github.liuruinian</groupId>
             <artifactId>dynamic-thread-core</artifactId>
         </dependency>
 

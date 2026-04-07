@@ -19,7 +19,7 @@
     <dependencies>
         <!-- Spring Base -->
         <dependency>
-            <groupId>com.dynamic.thread</groupId>
+            <groupId>io.github.liuruinian</groupId>
             <artifactId>dynamic-thread-spring-base</artifactId>
         </dependency>
 

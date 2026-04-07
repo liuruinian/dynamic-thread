@@ -19,13 +19,13 @@
     <dependencies>
         <!-- Apollo Starter -->
         <dependency>
-            <groupId>com.dynamic.thread</groupId>
+            <groupId>io.github.liuruinian</groupId>
             <artifactId>dynamic-thread-apollo-spring-boot-starter</artifactId>
         </dependency>
 
         <!-- Web Adapter -->
         <dependency>
-            <groupId>com.dynamic.thread</groupId>
+            <groupId>io.github.liuruinian</groupId>
             <artifactId>dynamic-thread-web-spring-boot-starter</artifactId>
         </dependency>
 

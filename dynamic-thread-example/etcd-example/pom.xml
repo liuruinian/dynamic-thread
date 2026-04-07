@@ -19,19 +19,19 @@
     <dependencies>
         <!-- ETCD Starter -->
         <dependency>
-            <groupId>com.dynamic.thread</groupId>
+            <groupId>io.github.liuruinian</groupId>
             <artifactId>dynamic-thread-etcd-spring-boot-starter</artifactId>
         </dependency>
 
         <!-- Web Adapter -->
         <dependency>
-            <groupId>com.dynamic.thread</groupId>
+            <groupId>io.github.liuruinian</groupId>
             <artifactId>dynamic-thread-web-spring-boot-starter</artifactId>
         </dependency>
 
         <!-- Agent for connecting to Dashboard Server -->
         <dependency>
-            <groupId>com.dynamic.thread</groupId>
+            <groupId>io.github.liuruinian</groupId>
             <artifactId>dynamic-thread-agent</artifactId>
         </dependency>
 

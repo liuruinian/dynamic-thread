@@ -128,52 +128,52 @@
 
             <!-- Project Modules -->
             <dependency>
-                <groupId>com.dynamic.thread</groupId>
+                <groupId>io.github.liuruinian</groupId>
                 <artifactId>dynamic-thread-core</artifactId>
-                <version>${dynamic-thread.version}</version>
+                <version>1.0.0</version>
             </dependency>
             <dependency>
-                <groupId>com.dynamic.thread</groupId>
+                <groupId>io.github.liuruinian</groupId>
                 <artifactId>dynamic-thread-spring-base</artifactId>
                 <version>${dynamic-thread.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.dynamic.thread</groupId>
+                <groupId>io.github.liuruinian</groupId>
                 <artifactId>dynamic-thread-common-spring-boot-starter</artifactId>
                 <version>${dynamic-thread.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.dynamic.thread</groupId>
+                <groupId>io.github.liuruinian</groupId>
                 <artifactId>dynamic-thread-nacos-cloud-spring-boot-starter</artifactId>
                 <version>${dynamic-thread.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.dynamic.thread</groupId>
+                <groupId>io.github.liuruinian</groupId>
                 <artifactId>dynamic-thread-apollo-spring-boot-starter</artifactId>
                 <version>${dynamic-thread.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.dynamic.thread</groupId>
+                <groupId>io.github.liuruinian</groupId>
                 <artifactId>dynamic-thread-web-spring-boot-starter</artifactId>
                 <version>${dynamic-thread.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.dynamic.thread</groupId>
+                <groupId>io.github.liuruinian</groupId>
                 <artifactId>dynamic-thread-file-spring-boot-starter</artifactId>
                 <version>${dynamic-thread.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.dynamic.thread</groupId>
+                <groupId>io.github.liuruinian</groupId>
                 <artifactId>dynamic-thread-jdbc-spring-boot-starter</artifactId>
                 <version>${dynamic-thread.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.dynamic.thread</groupId>
+                <groupId>io.github.liuruinian</groupId>
                 <artifactId>dynamic-thread-etcd-spring-boot-starter</artifactId>
                 <version>${dynamic-thread.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.dynamic.thread</groupId>
+                <groupId>io.github.liuruinian</groupId>
                 <artifactId>dynamic-thread-agent</artifactId>
                 <version>${dynamic-thread.version}</version>
             </dependency>

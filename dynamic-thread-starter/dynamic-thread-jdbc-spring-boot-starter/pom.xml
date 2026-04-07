@@ -19,7 +19,7 @@
     <dependencies>
         <!-- Common Starter -->
         <dependency>
-            <groupId>com.dynamic.thread</groupId>
+            <groupId>io.github.liuruinian</groupId>
             <artifactId>dynamic-thread-common-spring-boot-starter</artifactId>
         </dependency>
 
