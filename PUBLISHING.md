@@ -121,10 +121,10 @@ mvn clean package -Prelease -DskipTests
 mvn clean deploy -Prelease
 ```
 
-### 仅发布 starter 模块
+### 仅发布 starter 模块（含所有子模块）
 
 ```bash
-mvn clean deploy -Prelease -pl dynamic-thread-core,dynamic-thread-agent,dynamic-thread-spring-base,dynamic-thread-starter -am
+mvn clean deploy -Prelease -pl dynamic-thread-core,dynamic-thread-agent,dynamic-thread-spring-base,dynamic-thread-starter,dynamic-thread-starter/dynamic-thread-common-spring-boot-starter,dynamic-thread-starter/dynamic-thread-nacos-cloud-spring-boot-starter,dynamic-thread-starter/dynamic-thread-apollo-spring-boot-starter,dynamic-thread-starter/dynamic-thread-file-spring-boot-starter,dynamic-thread-starter/dynamic-thread-jdbc-spring-boot-starter,dynamic-thread-starter/dynamic-thread-etcd-spring-boot-starter,dynamic-thread-starter/dynamic-thread-adapter,dynamic-thread-starter/dynamic-thread-adapter/dynamic-thread-web-spring-boot-starter -am
 ```
 
 ### 跳过示例和 Server 模块
