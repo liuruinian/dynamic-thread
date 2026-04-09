@@ -8,6 +8,8 @@ server:
 spring:
   application:
     name: dynamic-thread-server
+  main:
+    allow-bean-definition-overriding: true
 
 # -----------------------------------------------------------------------------
 # SaToken Authentication Configuration

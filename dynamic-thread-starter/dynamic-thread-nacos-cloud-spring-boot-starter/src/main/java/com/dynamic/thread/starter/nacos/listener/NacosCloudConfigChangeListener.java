@@ -38,7 +38,7 @@ public class NacosCloudConfigChangeListener extends AbstractConfigChangeListener
     @Override
     public void startListening() {
         DynamicThreadPoolProperties.NacosProperties nacos = properties.getNacos();
-        if (nacos == null || nacos.getDataId() == null || nacos.getDataId().isBlank()) {
+        if (nacos == null || nacos.getDataId() == null || nacos.getDataId().trim().isEmpty()) {
             log.warn("Nacos dataId is not configured, skipping listener registration");
             return;
         }
@@ -67,7 +67,7 @@ public class NacosCloudConfigChangeListener extends AbstractConfigChangeListener
 
             // Load initial configuration
             String initialConfig = nacosConfigManager.getConfigService().getConfig(dataId, group, 5000);
-            if (initialConfig != null && !initialConfig.isBlank()) {
+            if (initialConfig != null && !initialConfig.trim().isEmpty()) {
                 log.info("Loading initial configuration from Nacos");
                 onConfigChange(initialConfig, configType);
             }

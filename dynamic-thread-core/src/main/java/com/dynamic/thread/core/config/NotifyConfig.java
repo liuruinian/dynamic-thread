@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -31,9 +33,9 @@ public class NotifyConfig {
      * Parse receivers into list
      */
     public List<String> getReceiveList() {
-        if (receives == null || receives.isBlank()) {
-            return List.of();
+        if (receives == null || receives.trim().isEmpty()) {
+            return Collections.emptyList();
         }
-        return List.of(receives.split(","));
+        return Arrays.asList(receives.split(","));
     }
 }

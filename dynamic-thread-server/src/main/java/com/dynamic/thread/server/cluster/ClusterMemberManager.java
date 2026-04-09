@@ -50,11 +50,11 @@ public class ClusterMemberManager {
         String nodeId = clusterConfig.getNodeId();
         String nodeAddress = clusterConfig.getNodeAddress();
 
-        if (nodeId == null || nodeId.isBlank()) {
+        if (nodeId == null || nodeId.trim().isEmpty()) {
             nodeId = generateNodeId(nodeAddress);
         }
 
-        if (nodeAddress == null || nodeAddress.isBlank()) {
+        if (nodeAddress == null || nodeAddress.trim().isEmpty()) {
             nodeAddress = detectLocalAddress() + ":" + clusterConfig.getClusterPort();
             log.info("Auto-detected node address: {}", nodeAddress);
         }
@@ -145,7 +145,7 @@ public class ClusterMemberManager {
      * We find the member by address and update the map key to the real nodeId.
      */
     public void onNodeJoin(String realNodeId, String nodeAddress) {
-        if (realNodeId == null || realNodeId.isBlank() || nodeAddress == null || nodeAddress.isBlank()) {
+        if (realNodeId == null || realNodeId.trim().isEmpty() || nodeAddress == null || nodeAddress.trim().isEmpty()) {
             return;
         }
         // Already registered with the correct nodeId?
@@ -281,7 +281,7 @@ public class ClusterMemberManager {
      * Generate a node ID from the address.
      */
     private String generateNodeId(String address) {
-        if (address != null && !address.isBlank()) {
+        if (address != null && !address.trim().isEmpty()) {
             return address.replace(":", "-").replace(".", "-");
         }
         return UUID.randomUUID().toString().substring(0, 8);

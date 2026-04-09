@@ -17,22 +17,20 @@ public class ConfigTestController {
 
     @PostMapping("/update-config")
     public String updateConfig() {
-        String newConfig = """
-            dynamic-thread:
-              executors:
-                - thread-pool-id: order-executor
-                  core-pool-size: 15
-                  maximum-pool-size: 30
-                  queue-capacity: 2000
-                  keep-alive-time: 120
-                  rejected-handler: CallerRunsPolicy
-                - thread-pool-id: payment-executor
-                  core-pool-size: 8
-                  maximum-pool-size: 16
-                  queue-capacity: 800
-                  keep-alive-time: 60
-                  rejected-handler: AbortPolicy
-            """.stripIndent();
+        String newConfig = "dynamic-thread:\n"
+                + "  executors:\n"
+                + "    - thread-pool-id: order-executor\n"
+                + "      core-pool-size: 15\n"
+                + "      maximum-pool-size: 30\n"
+                + "      queue-capacity: 2000\n"
+                + "      keep-alive-time: 120\n"
+                + "      rejected-handler: CallerRunsPolicy\n"
+                + "    - thread-pool-id: payment-executor\n"
+                + "      core-pool-size: 8\n"
+                + "      maximum-pool-size: 16\n"
+                + "      queue-capacity: 800\n"
+                + "      keep-alive-time: 60\n"
+                + "      rejected-handler: AbortPolicy\n";
         
         int updated = jdbcTemplate.update(
             "UPDATE dynamic_thread_config SET config_content = ? WHERE config_key = ?",

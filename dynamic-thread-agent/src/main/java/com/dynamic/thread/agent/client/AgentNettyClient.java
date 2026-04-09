@@ -12,7 +12,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 
-import jakarta.annotation.PreDestroy;
+import javax.annotation.PreDestroy;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;

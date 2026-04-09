@@ -187,7 +187,7 @@ public class RejectedStatistics {
      */
     public List<RejectedTaskRecord> getRecentRecords(String threadPoolId, int limit) {
         RejectedExecutionHandlerProxy proxy = proxyHandlers.get(threadPoolId);
-        return proxy != null ? proxy.getRecentRecords(limit) : List.of();
+        return proxy != null ? proxy.getRecentRecords(limit) : java.util.Collections.emptyList();
     }
 
     /**

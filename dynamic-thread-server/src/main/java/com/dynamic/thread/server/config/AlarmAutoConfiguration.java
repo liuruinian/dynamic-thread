@@ -53,7 +53,7 @@ public class AlarmAutoConfiguration {
                 // Email uses SMTP configuration, not webhook URL
                 platform = createEmailPlatform(platformConfig);
             } else {
-                if (url == null || url.isBlank()) {
+                if (url == null || url.trim().isEmpty()) {
                     continue;
                 }
                 platform = createPlatform(platformType.toUpperCase(), url, secret);
@@ -72,7 +72,7 @@ public class AlarmAutoConfiguration {
      */
     private NotifyPlatform createPlatform(String type, String url, String secret) {
         if ("DING".equalsIgnoreCase(type) || "DINGTALK".equalsIgnoreCase(type)) {
-            if (secret != null && !secret.isBlank()) {
+            if (secret != null && !secret.trim().isEmpty()) {
                 log.info("DingTalk platform configured with HMAC-SHA256 signing");
                 return new DingTalkNotifyPlatform(url, secret);
             }
@@ -81,7 +81,7 @@ public class AlarmAutoConfiguration {
             log.info("WeChatWork platform configured");
             return new WeChatWorkNotifyPlatform(url);
         } else if ("WEBHOOK".equalsIgnoreCase(type)) {
-            if (secret != null && !secret.isBlank()) {
+            if (secret != null && !secret.trim().isEmpty()) {
                 log.info("Webhook platform configured with HMAC-SHA256 signing");
                 return new WebhookNotifyPlatform(url, secret);
             }
@@ -105,14 +105,14 @@ public class AlarmAutoConfiguration {
         String toAddresses = config.get("toAddresses");
         boolean ssl = "true".equalsIgnoreCase(config.get("ssl"));
 
-        if (smtpHost == null || smtpHost.isBlank()) {
+        if (smtpHost == null || smtpHost.trim().isEmpty()) {
             log.warn("Email platform missing smtpHost configuration");
             return null;
         }
 
         int smtpPort = ssl ? 465 : 587;
         try {
-            if (smtpPortStr != null && !smtpPortStr.isBlank()) {
+            if (smtpPortStr != null && !smtpPortStr.trim().isEmpty()) {
                 smtpPort = Integer.parseInt(smtpPortStr);
             }
         } catch (NumberFormatException e) {

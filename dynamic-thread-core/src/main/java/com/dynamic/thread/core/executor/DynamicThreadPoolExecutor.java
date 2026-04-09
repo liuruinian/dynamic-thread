@@ -411,7 +411,7 @@ public class DynamicThreadPoolExecutor extends ThreadPoolExecutor {
      * @return list of recent rejection records
      */
     public List<RejectedTaskRecord> getRecentRejectedRecords() {
-        return rejectionProxy != null ? rejectionProxy.getRecentRecords() : List.of();
+        return rejectionProxy != null ? rejectionProxy.getRecentRecords() : java.util.Collections.<RejectedTaskRecord>emptyList();
     }
 
     /**
@@ -421,7 +421,7 @@ public class DynamicThreadPoolExecutor extends ThreadPoolExecutor {
      * @return list of recent rejection records
      */
     public List<RejectedTaskRecord> getRecentRejectedRecords(int limit) {
-        return rejectionProxy != null ? rejectionProxy.getRecentRecords(limit) : List.of();
+        return rejectionProxy != null ? rejectionProxy.getRecentRecords(limit) : java.util.Collections.<RejectedTaskRecord>emptyList();
     }
 
     /**

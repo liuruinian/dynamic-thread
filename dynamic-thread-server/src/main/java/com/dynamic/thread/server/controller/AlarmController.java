@@ -419,7 +419,7 @@ public class AlarmController {
                         config.put("webhookUrl", platformConfig.get("url"));
                         config.put("platform", normalizedType);
                         String secret = platformConfig.get("secret");
-                        if (secret != null && !secret.isBlank()) {
+                        if (secret != null && !secret.trim().isEmpty()) {
                             String masked = secret.length() > 10
                                     ? secret.substring(0, 6) + "****" + secret.substring(secret.length() - 4)
                                     : "****";
@@ -453,14 +453,22 @@ public class AlarmController {
      */
     private String normalizePlatformType(String platform) {
         if (platform == null) return null;
-        return switch (platform.toUpperCase()) {
-            case "DING", "DINGTALK" -> "DING";
-            case "WECHAT", "WECHATWORK" -> "WECHAT";
-            case "WEBHOOK" -> "WEBHOOK";
-            case "EMAIL" -> "EMAIL";
-            case "LARK" -> "LARK";
-            default -> null;
-        };
+        switch (platform.toUpperCase()) {
+            case "DING":
+            case "DINGTALK":
+                return "DING";
+            case "WECHAT":
+            case "WECHATWORK":
+                return "WECHAT";
+            case "WEBHOOK":
+                return "WEBHOOK";
+            case "EMAIL":
+                return "EMAIL";
+            case "LARK":
+                return "LARK";
+            default:
+                return null;
+        }
     }
 
     /**
@@ -521,12 +529,12 @@ public class AlarmController {
                     String toAddresses = config.get("toAddresses");
                     boolean ssl = "true".equalsIgnoreCase(config.get("ssl"));
 
-                    if (smtpHost == null || smtpHost.isBlank()) {
+                    if (smtpHost == null || smtpHost.trim().isEmpty()) {
                         result.put("success", false);
                         result.put("message", "SMTP host is required");
                         return ResponseEntity.badRequest().body(result);
                     }
-                    if (toAddresses == null || toAddresses.isBlank()) {
+                    if (toAddresses == null || toAddresses.trim().isEmpty()) {
                         result.put("success", false);
                         result.put("message", "Recipient addresses are required");
                         return ResponseEntity.badRequest().body(result);
@@ -534,7 +542,7 @@ public class AlarmController {
 
                     int smtpPort = 465;
                     try {
-                        if (smtpPortStr != null && !smtpPortStr.isBlank()) {
+                        if (smtpPortStr != null && !smtpPortStr.trim().isEmpty()) {
                             smtpPort = Integer.parseInt(smtpPortStr);
                         }
                     } catch (NumberFormatException e) {
@@ -611,12 +619,12 @@ public class AlarmController {
                     String toAddresses = config.get("toAddresses");
                     boolean ssl = "true".equalsIgnoreCase(config.get("ssl"));
 
-                    if (smtpHost == null || smtpHost.isBlank()) {
+                    if (smtpHost == null || smtpHost.trim().isEmpty()) {
                         result.put("success", false);
                         result.put("message", "SMTP host is required for email test");
                         return ResponseEntity.badRequest().body(result);
                     }
-                    if (toAddresses == null || toAddresses.isBlank()) {
+                    if (toAddresses == null || toAddresses.trim().isEmpty()) {
                         result.put("success", false);
                         result.put("message", "Recipient addresses are required for email test");
                         return ResponseEntity.badRequest().body(result);
@@ -624,7 +632,7 @@ public class AlarmController {
 
                     int smtpPort = 465;
                     try {
-                        if (smtpPortStr != null && !smtpPortStr.isBlank()) {
+                        if (smtpPortStr != null && !smtpPortStr.trim().isEmpty()) {
                             smtpPort = Integer.parseInt(smtpPortStr);
                         }
                     } catch (NumberFormatException e) {

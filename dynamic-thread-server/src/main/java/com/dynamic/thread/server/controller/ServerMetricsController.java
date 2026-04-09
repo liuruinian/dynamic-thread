@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -26,11 +27,7 @@ public class ServerMetricsController {
      */
     @GetMapping("/metrics")
     public Map<String, Object> getMetrics() {
-        return Map.of(
-                "code", 200,
-                "message", "success",
-                "data", serverMetricsService.getMetrics()
-        );
+        return buildResponse(serverMetricsService.getMetrics());
     }
 
     /**
@@ -38,11 +35,7 @@ public class ServerMetricsController {
      */
     @GetMapping("/cpu")
     public Map<String, Object> getCpuInfo() {
-        return Map.of(
-                "code", 200,
-                "message", "success",
-                "data", serverMetricsService.getCpuInfo()
-        );
+        return buildResponse(serverMetricsService.getCpuInfo());
     }
 
     /**
@@ -50,11 +43,7 @@ public class ServerMetricsController {
      */
     @GetMapping("/memory")
     public Map<String, Object> getMemoryInfo() {
-        return Map.of(
-                "code", 200,
-                "message", "success",
-                "data", serverMetricsService.getMemoryInfo()
-        );
+        return buildResponse(serverMetricsService.getMemoryInfo());
     }
 
     /**
@@ -62,11 +51,7 @@ public class ServerMetricsController {
      */
     @GetMapping("/disk")
     public Map<String, Object> getDiskInfo() {
-        return Map.of(
-                "code", 200,
-                "message", "success",
-                "data", serverMetricsService.getDiskInfo()
-        );
+        return buildResponse(serverMetricsService.getDiskInfo());
     }
 
     /**
@@ -74,11 +59,7 @@ public class ServerMetricsController {
      */
     @GetMapping("/network")
     public Map<String, Object> getNetworkInfo() {
-        return Map.of(
-                "code", 200,
-                "message", "success",
-                "data", serverMetricsService.getNetworkInfo()
-        );
+        return buildResponse(serverMetricsService.getNetworkInfo());
     }
 
     /**
@@ -86,10 +67,14 @@ public class ServerMetricsController {
      */
     @GetMapping("/jvm")
     public Map<String, Object> getJvmInfo() {
-        return Map.of(
-                "code", 200,
-                "message", "success",
-                "data", serverMetricsService.getJvmInfo()
-        );
+        return buildResponse(serverMetricsService.getJvmInfo());
+    }
+
+    private Map<String, Object> buildResponse(Object data) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("code", 200);
+        result.put("message", "success");
+        result.put("data", data);
+        return result;
     }
 }

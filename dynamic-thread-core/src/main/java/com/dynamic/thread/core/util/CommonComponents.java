@@ -4,12 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import java.net.http.HttpClient;
 import java.time.Duration;
 
 /**
  * Common components factory providing shared instances of frequently used objects.
- * Implements Singleton pattern for ObjectMapper and HttpClient to avoid repeated instantiation.
+ * Implements Singleton pattern for ObjectMapper to avoid repeated instantiation.
  */
 public final class CommonComponents {
 
@@ -17,11 +16,6 @@ public final class CommonComponents {
      * Shared ObjectMapper instance with common configurations
      */
     private static final ObjectMapper OBJECT_MAPPER;
-
-    /**
-     * Shared HttpClient instance with default timeout settings
-     */
-    private static final HttpClient HTTP_CLIENT;
 
     /**
      * Default connection timeout in seconds
@@ -39,11 +33,6 @@ public final class CommonComponents {
         OBJECT_MAPPER.registerModule(new JavaTimeModule());
         OBJECT_MAPPER.findAndRegisterModules();
         OBJECT_MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
-        // Initialize HttpClient with default settings
-        HTTP_CLIENT = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS))
-                .build();
     }
 
     // Private constructor to prevent instantiation
@@ -62,13 +51,12 @@ public final class CommonComponents {
     }
 
     /**
-     * Get the shared HttpClient instance.
-     * This instance is thread-safe and can be shared across multiple requests.
+     * Get the default request timeout in milliseconds.
      *
-     * @return the shared HttpClient instance
+     * @return the default request timeout in ms
      */
-    public static HttpClient httpClient() {
-        return HTTP_CLIENT;
+    public static int defaultRequestTimeoutMs() {
+        return DEFAULT_REQUEST_TIMEOUT_SECONDS * 1000;
     }
 
     /**
@@ -78,6 +66,15 @@ public final class CommonComponents {
      */
     public static Duration defaultRequestTimeout() {
         return Duration.ofSeconds(DEFAULT_REQUEST_TIMEOUT_SECONDS);
+    }
+
+    /**
+     * Get the default connect timeout in milliseconds.
+     *
+     * @return the default connect timeout in ms
+     */
+    public static int defaultConnectTimeoutMs() {
+        return DEFAULT_CONNECT_TIMEOUT_SECONDS * 1000;
     }
 
     /**

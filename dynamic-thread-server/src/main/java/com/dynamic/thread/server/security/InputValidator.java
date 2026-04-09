@@ -54,7 +54,7 @@ public class InputValidator {
      * Validate application ID.
      */
     public ValidationResult validateAppId(String appId) {
-        if (appId == null || appId.isBlank()) {
+        if (appId == null || appId.trim().isEmpty()) {
             return ValidationResult.error("appId is required");
         }
         if (appId.length() > MAX_APP_ID_LENGTH) {
@@ -74,7 +74,7 @@ public class InputValidator {
      * Validate instance ID.
      */
     public ValidationResult validateInstanceId(String instanceId) {
-        if (instanceId == null || instanceId.isBlank()) {
+        if (instanceId == null || instanceId.trim().isEmpty()) {
             return ValidationResult.error("instanceId is required");
         }
         if (instanceId.length() > MAX_INSTANCE_ID_LENGTH) {
@@ -97,7 +97,7 @@ public class InputValidator {
      * Validate thread pool ID.
      */
     public ValidationResult validateThreadPoolId(String poolId) {
-        if (poolId == null || poolId.isBlank()) {
+        if (poolId == null || poolId.trim().isEmpty()) {
             return ValidationResult.error("threadPoolId is required");
         }
         if (poolId.length() > MAX_POOL_ID_LENGTH) {
@@ -173,7 +173,12 @@ public class InputValidator {
     /**
      * Validation result holder.
      */
-    public record ValidationResult(boolean valid, String message) {
+    @lombok.Data
+    @lombok.AllArgsConstructor
+    public static class ValidationResult {
+        private final boolean valid;
+        private final String message;
+
         public static ValidationResult ok() {
             return new ValidationResult(true, null);
         }

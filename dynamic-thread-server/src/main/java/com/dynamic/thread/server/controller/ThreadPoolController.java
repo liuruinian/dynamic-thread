@@ -146,7 +146,7 @@ public class ThreadPoolController {
             clusterInfo.put("localAgentCount", clientRegistry.getLocalClientCount());
             result.put("cluster", clusterInfo);
         } else {
-            result.put("cluster", Map.of("enabled", false));
+            result.put("cluster", java.util.Collections.singletonMap("enabled", false));
         }
 
         return result;

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -139,7 +140,7 @@ class RetryBufferPolicyTest {
         Thread.sleep(500);
 
         // Check statistics map
-        var stats = policy.getStatistics();
+        Map<String, Object> stats = policy.getStatistics();
         assertNotNull(stats);
         assertTrue(stats.containsKey("bufferCapacity"));
         assertTrue(stats.containsKey("totalBuffered"));

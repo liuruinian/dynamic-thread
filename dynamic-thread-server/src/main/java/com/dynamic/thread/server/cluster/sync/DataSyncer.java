@@ -370,16 +370,16 @@ public class DataSyncer {
         if (data == null || data.getType() == null) return;
 
         switch (data.getType()) {
-            case REGISTER -> {
+            case REGISTER:
                 clientRegistry.registerRemote(sourceNodeId, data.getAppId(),
                         data.getInstanceId(), data.getThreadPoolIds(), data.getTimestamp());
-            }
-            case UNREGISTER -> {
+                break;
+            case UNREGISTER:
                 clientRegistry.unregisterRemote(data.getInstanceId());
-            }
-            case STATE_UPDATE -> {
+                break;
+            case STATE_UPDATE:
                 clientRegistry.updateRemoteStates(data.getInstanceId(), data.getStates(), data.getTimestamp());
-            }
+                break;
         }
     }
 

@@ -132,13 +132,13 @@ public class ThreadPoolService {
             boolean sent = channelHandler.sendConfigUpdate(instanceId, configJson);
 
             if (sent) {
-                return new ConfigUpdateResult(true, "配置更新已发送到实例: " + instanceId, List.of(instanceId), List.of());
+                return new ConfigUpdateResult(true, "配置更新已发送到实例: " + instanceId, Collections.singletonList(instanceId), Collections.emptyList());
             } else {
-                return new ConfigUpdateResult(false, "实例不在线或不存在: " + instanceId, List.of(), List.of());
+                return new ConfigUpdateResult(false, "实例不在线或不存在: " + instanceId, Collections.emptyList(), Collections.emptyList());
             }
         } catch (Exception e) {
             log.error("Failed to send config update: {}", e.getMessage());
-            return new ConfigUpdateResult(false, e.getMessage(), List.of(), List.of());
+            return new ConfigUpdateResult(false, e.getMessage(), Collections.emptyList(), Collections.emptyList());
         }
     }
 
@@ -151,7 +151,7 @@ public class ThreadPoolService {
      */
     public ConfigUpdateResult broadcastConfig(String threadPoolId, Object config) {
         if (threadPoolId == null || threadPoolId.isEmpty()) {
-            return new ConfigUpdateResult(false, "threadPoolId 不能为空", List.of(), List.of());
+            return new ConfigUpdateResult(false, "threadPoolId 不能为空", Collections.emptyList(), Collections.emptyList());
         }
 
         try {
@@ -187,17 +187,19 @@ public class ThreadPoolService {
             }
         } catch (Exception e) {
             log.error("Failed to broadcast config update: {}", e.getMessage());
-            return new ConfigUpdateResult(false, e.getMessage(), List.of(), List.of());
+            return new ConfigUpdateResult(false, e.getMessage(), Collections.emptyList(), Collections.emptyList());
         }
     }
 
     /**
      * Result of a configuration update operation
      */
-    public record ConfigUpdateResult(
-            boolean success,
-            String message,
-            List<String> sentInstances,
-            List<String> failedInstances
-    ) {}
+    @lombok.Data
+    @lombok.AllArgsConstructor
+    public static class ConfigUpdateResult {
+        private final boolean success;
+        private final String message;
+        private final List<String> sentInstances;
+        private final List<String> failedInstances;
+    }
 }

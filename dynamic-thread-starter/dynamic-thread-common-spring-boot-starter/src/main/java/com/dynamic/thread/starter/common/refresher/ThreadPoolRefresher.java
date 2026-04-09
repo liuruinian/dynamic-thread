@@ -60,7 +60,7 @@ public class ThreadPoolRefresher {
      */
     public ConfigChangeResult refreshSingle(DynamicThreadPoolProperties.ExecutorProperties config) {
         String threadPoolId = config.getThreadPoolId();
-        if (threadPoolId == null || threadPoolId.isBlank()) {
+        if (threadPoolId == null || threadPoolId.trim().isEmpty()) {
             log.warn("Thread pool id is empty, skipping");
             return null;
         }
@@ -85,7 +85,7 @@ public class ThreadPoolRefresher {
      */
     public ConfigChangeResult refresh(ThreadPoolConfig config) {
         String threadPoolId = config.getThreadPoolId();
-        if (threadPoolId == null || threadPoolId.isBlank()) {
+        if (threadPoolId == null || threadPoolId.trim().isEmpty()) {
             log.warn("Thread pool id is empty, skipping");
             return null;
         }

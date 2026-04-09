@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -231,13 +232,13 @@ public class ConnectionRateLimiter {
      * Get current statistics.
      */
     public Map<String, Object> getStats() {
-        return Map.of(
-                "totalConnections", totalConnections.get(),
-                "maxConnections", maxConnections,
-                "ipCount", connectionsPerIp.size(),
-                "appCount", connectionsPerApp.size(),
-                "blacklistedIps", blacklistedIps.size()
-        );
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalConnections", totalConnections.get());
+        stats.put("maxConnections", maxConnections);
+        stats.put("ipCount", connectionsPerIp.size());
+        stats.put("appCount", connectionsPerApp.size());
+        stats.put("blacklistedIps", blacklistedIps.size());
+        return stats;
     }
 
     // Setters for configuration

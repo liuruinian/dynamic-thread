@@ -215,12 +215,18 @@ public class AlarmService {
      * Create a notification platform instance
      */
     private NotifyPlatform createPlatform(String platformType, String webhookUrl, String secret) {
-        return switch (platformType.toUpperCase()) {
-            case "DING", "DINGTALK" -> new DingTalkNotifyPlatform(webhookUrl, secret);
-            case "WECHAT", "WECHATWORK" -> new WeChatWorkNotifyPlatform(webhookUrl);
-            case "WEBHOOK" -> new WebhookNotifyPlatform(webhookUrl, secret);
-            default -> null;
-        };
+        switch (platformType.toUpperCase()) {
+            case "DING":
+            case "DINGTALK":
+                return new DingTalkNotifyPlatform(webhookUrl, secret);
+            case "WECHAT":
+            case "WECHATWORK":
+                return new WeChatWorkNotifyPlatform(webhookUrl);
+            case "WEBHOOK":
+                return new WebhookNotifyPlatform(webhookUrl, secret);
+            default:
+                return null;
+        }
     }
 
     // ==================== Alarm Simulation ====================
@@ -298,10 +304,12 @@ public class AlarmService {
     /**
      * Result of alarm simulation
      */
-    public record SimulationResult(
-            int triggeredCount,
-            List<AlarmRecord> records,
-            ThreadPoolState simulatedState,
-            Set<String> enabledPlatforms
-    ) {}
+    @lombok.Data
+    @lombok.AllArgsConstructor
+    public static class SimulationResult {
+        private final int triggeredCount;
+        private final List<AlarmRecord> records;
+        private final ThreadPoolState simulatedState;
+        private final Set<String> enabledPlatforms;
+    }
 }

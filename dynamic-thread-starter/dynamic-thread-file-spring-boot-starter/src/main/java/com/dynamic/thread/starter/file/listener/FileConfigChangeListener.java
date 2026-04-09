@@ -31,7 +31,7 @@ public class FileConfigChangeListener extends AbstractConfigChangeListener {
     @Override
     public void startListening() {
         DynamicThreadPoolProperties.FileProperties fileProps = properties.getFile();
-        if (fileProps == null || fileProps.getPath() == null || fileProps.getPath().isBlank()) {
+        if (fileProps == null || fileProps.getPath() == null || fileProps.getPath().trim().isEmpty()) {
             log.warn("File path is not configured, skipping file listener registration");
             return;
         }
@@ -153,8 +153,8 @@ public class FileConfigChangeListener extends AbstractConfigChangeListener {
                 return;
             }
 
-            String content = Files.readString(configFilePath);
-            if (content == null || content.isBlank()) {
+            String content = new String(java.nio.file.Files.readAllBytes(configFilePath), java.nio.charset.StandardCharsets.UTF_8);
+            if (content == null || content.trim().isEmpty()) {
                 log.warn("Configuration file is empty: {}", configFilePath);
                 return;
             }

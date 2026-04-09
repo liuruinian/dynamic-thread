@@ -2,11 +2,10 @@ package com.dynamic.thread.core.notify;
 
 import com.dynamic.thread.core.model.ThreadPoolState;
 import com.dynamic.thread.core.util.CommonComponents;
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.URI;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -91,7 +90,7 @@ public abstract class AbstractHttpNotifyPlatform implements NotifyPlatform {
      * @return true if sent successfully
      */
     protected boolean sendNotification(String content) {
-        if (webhookUrl == null || webhookUrl.isBlank()) {
+        if (webhookUrl == null || webhookUrl.trim().isEmpty()) {
             log.warn("[{}] Webhook URL is not configured", getPlatformName());
             return false;
         }
@@ -102,28 +101,23 @@ public abstract class AbstractHttpNotifyPlatform implements NotifyPlatform {
 
             log.debug("[{}] Sending notification to {}", getPlatformName(), targetUrl);
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(targetUrl))
+            HttpResponse response = HttpRequest.post(targetUrl)
                     .header("Content-Type", "application/json; charset=utf-8")
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                    .timeout(CommonComponents.defaultRequestTimeout())
-                    .build();
+                    .timeout(CommonComponents.defaultRequestTimeoutMs())
+                    .body(jsonBody)
+                    .execute();
 
-            HttpResponse<String> response = CommonComponents.httpClient()
-                    .send(request, HttpResponse.BodyHandlers.ofString());
+            int statusCode = response.getStatus();
+            String responseBody = response.body();
 
-            if (isSuccessResponse(response.statusCode(), response.body())) {
+            if (isSuccessResponse(statusCode, responseBody)) {
                 log.info("[{}] Notification sent successfully", getPlatformName());
                 return true;
             } else {
                 log.warn("[{}] Notification failed, status={}, response={}",
-                        getPlatformName(), response.statusCode(), response.body());
+                        getPlatformName(), statusCode, responseBody);
                 return false;
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            log.error("[{}] Sending interrupted", getPlatformName());
-            return false;
         } catch (Exception e) {
             log.error("[{}] Failed to send notification: {}", getPlatformName(), e.getMessage());
             return false;
@@ -138,17 +132,6 @@ public abstract class AbstractHttpNotifyPlatform implements NotifyPlatform {
      */
     protected String buildTargetUrl() {
         return webhookUrl;
-    }
-
-    /**
-     * Add custom headers to the request.
-     * Subclasses can override this to add authentication or other headers.
-     *
-     * @param builder the request builder
-     * @return the modified request builder
-     */
-    protected HttpRequest.Builder addCustomHeaders(HttpRequest.Builder builder) {
-        return builder;
     }
 
     @Override

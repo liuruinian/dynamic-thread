@@ -280,9 +280,11 @@ public class AgentChannelHandler extends SimpleChannelInboundHandler<Message> {
     /**
      * Registration info sent to server
      */
-    public record RegistrationInfo(
-            String appId,
-            String instanceId,
-            java.util.Collection<String> threadPoolIds
-    ) {}
+    @lombok.Data
+    @lombok.AllArgsConstructor
+    public static class RegistrationInfo {
+        private final String appId;
+        private final String instanceId;
+        private final java.util.Collection<String> threadPoolIds;
+    }
 }

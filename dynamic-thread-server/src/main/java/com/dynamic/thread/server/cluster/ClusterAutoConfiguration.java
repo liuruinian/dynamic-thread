@@ -7,7 +7,7 @@ import com.dynamic.thread.server.cluster.transport.ClusterTransportServer;
 import com.dynamic.thread.server.config.ServerProperties;
 import com.dynamic.thread.server.handler.ServerChannelHandler;
 import com.dynamic.thread.server.registry.ClientRegistry;
-import jakarta.annotation.PreDestroy;
+import javax.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;

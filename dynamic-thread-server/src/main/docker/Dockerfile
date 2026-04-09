@@ -19,7 +19,7 @@
 #   docker run -d -e JVM_XMS=4g -e JVM_XMX=4g -p 8080:8080 -p 9527:9527 dynamic-thread-server:latest
 # =============================================================================
 
-FROM docker.xuanyuan.run/eclipse-temurin:21-jre-jammy
+FROM docker.xuanyuan.run/openjdk:8-jre-slim
 
 LABEL maintainer="liuruinian <liuruinian@foxmail.com>"
 LABEL description="Dynamic Thread Pool Dashboard Server"
@@ -129,46 +129,26 @@ ENTRYPOINT ["sh", "-c", "\
     -server \
     -Xms${JVM_XMS} \
     -Xmx${JVM_XMX} \
-    -XX:+UnlockExperimentalVMOptions \
-    -XX:+UnlockDiagnosticVMOptions \
-    -XX:+UseZGC \
-    -XX:+UseDynamicNumberOfGCThreads \
+    -XX:+UseG1GC \
+    -XX:G1HeapRegionSize=16m \
+    -XX:G1ReservePercent=25 \
+    -XX:InitiatingHeapOccupancyPercent=30 \
     -XX:ConcGCThreads=3 \
     -XX:ParallelGCThreads=8 \
-    -XX:ZCollectionInterval=130 \
-    -XX:ZAllocationSpikeTolerance=1 \
     -XX:MaxDirectMemorySize=${JVM_MAX_DIRECT_MEMORY} \
     -XX:MetaspaceSize=${JVM_METASPACE} \
     -XX:MaxMetaspaceSize=${JVM_MAX_METASPACE} \
     -XX:ReservedCodeCacheSize=${JVM_CODE_CACHE} \
     -XX:InitialCodeCacheSize=${JVM_CODE_CACHE} \
-    -XX:+UseCountedLoopSafepoints \
-    -XX:+SafepointTimeout \
-    -XX:SafepointTimeoutDelay=500 \
-    -XX:GuaranteedSafepointInterval=0 \
     -XX:+DisableExplicitGC \
     -XX:+HeapDumpOnOutOfMemoryError \
     -XX:HeapDumpPath=/opt/logs/heapdump/ \
-    -XX:ZStatisticsInterval=130 \
-    -Xlog:safepoint,class+load=info,class+unload=info,classhisto*=trace,age*,gc*=info:file=/opt/logs/gc/gc-%t.log:time,tid,tags:filecount=5,filesize=50m \
-    --add-opens java.base/java.lang=ALL-UNNAMED \
-    --add-opens java.base/java.io=ALL-UNNAMED \
-    --add-opens java.base/java.math=ALL-UNNAMED \
-    --add-opens java.base/java.net=ALL-UNNAMED \
-    --add-opens java.base/java.nio=ALL-UNNAMED \
-    --add-opens java.base/java.security=ALL-UNNAMED \
-    --add-opens java.base/java.text=ALL-UNNAMED \
-    --add-opens java.base/java.time=ALL-UNNAMED \
-    --add-opens java.base/java.util=ALL-UNNAMED \
-    --add-opens java.base/java.util.concurrent=ALL-UNNAMED \
-    --add-opens java.base/java.util.concurrent.locks=ALL-UNNAMED \
-    --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED \
-    --add-opens java.base/jdk.internal.access=ALL-UNNAMED \
-    --add-opens java.base/jdk.internal.misc=ALL-UNNAMED \
-    --add-opens java.base/sun.reflect.generics.reflectiveObjects=ALL-UNNAMED \
-    --add-opens java.base/jdk.internal.perf=ALL-UNNAMED \
-    --add-opens java.base/java.instrument=ALL-UNNAMED \
-    --add-opens jdk.attach/sun.tools.attach=ALL-UNNAMED \
+    -XX:+PrintGCDetails \
+    -XX:+PrintGCDateStamps \
+    -Xloggc:/opt/logs/gc/gc.log \
+    -XX:+UseGCLogFileRotation \
+    -XX:NumberOfGCLogFiles=5 \
+    -XX:GCLogFileSize=50m \
     ${JVM_EXTRA_OPTS} \
     -jar app.jar \
 "]

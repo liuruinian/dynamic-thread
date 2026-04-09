@@ -105,7 +105,7 @@ public class JdbcConfigChangeListener extends AbstractConfigChangeListener {
             String configContent = (String) row.get("config_content");
             String configType = (String) row.get("config_type");
 
-            if (configContent == null || configContent.isBlank()) {
+            if (configContent == null || configContent.trim().isEmpty()) {
                 log.debug("Configuration content is empty for key: {}", configKey);
                 return;
             }

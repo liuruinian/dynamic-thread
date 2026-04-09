@@ -22,7 +22,7 @@ public class ConfigParser {
      * @return list of executor properties
      */
     public List<DynamicThreadPoolProperties.ExecutorProperties> parse(String content, String configType) {
-        if (content == null || content.isBlank()) {
+        if (content == null || content.trim().isEmpty()) {
             return Collections.emptyList();
         }
 

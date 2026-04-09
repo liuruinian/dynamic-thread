@@ -36,7 +36,7 @@ public class AlarmAutoConfiguration {
             String platformType = platformConfig.getPlatform();
             String url = platformConfig.getUrl();
 
-            if (platformType == null || url == null || url.isBlank()) {
+            if (platformType == null || url == null || url.trim().isEmpty()) {
                 continue;
             }
 
@@ -54,7 +54,7 @@ public class AlarmAutoConfiguration {
      */
     private NotifyPlatform createPlatform(String type, String url, String secret) {
         if ("DING".equalsIgnoreCase(type) || "DINGTALK".equalsIgnoreCase(type)) {
-            if (secret != null && !secret.isBlank()) {
+            if (secret != null && !secret.trim().isEmpty()) {
                 log.info("DingTalk platform configured with HMAC-SHA256 signing");
                 return new DingTalkNotifyPlatform(url, secret);
             }

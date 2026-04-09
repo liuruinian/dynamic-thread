@@ -3,6 +3,7 @@ package com.dynamic.thread.server.cluster.transport;
 import com.dynamic.thread.core.protocol.Message;
 import com.dynamic.thread.core.protocol.MessageType;
 import com.dynamic.thread.server.cluster.ClusterMemberManager;
+import com.dynamic.thread.server.cluster.model.ClusterNode;
 import com.dynamic.thread.server.cluster.sync.DataSyncer;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -48,20 +49,37 @@ public class ClusterChannelHandler extends SimpleChannelInboundHandler<Message> 
         }
 
         switch (msg.getType()) {
-            case CLUSTER_HEARTBEAT -> handleClusterHeartbeat(ctx, msg);
-            case CLUSTER_FULL_SYNC -> handleFullSync(ctx, msg);
-            case CLUSTER_INCREMENTAL_SYNC -> handleIncrementalSync(ctx, msg);
-            case CLUSTER_CONFIG_FORWARD -> handleConfigForward(ctx, msg);
-            case CLUSTER_NODE_JOIN -> handleNodeJoin(ctx, msg);
-            case CLUSTER_NODE_LEAVE -> handleNodeLeave(ctx, msg);
-            case CLUSTER_ALARM_SYNC -> handleAlarmSync(ctx, msg);
-            default -> log.warn("Unexpected message type on cluster channel: {}", msg.getType());
+            case CLUSTER_HEARTBEAT:
+                handleClusterHeartbeat(ctx, msg);
+                break;
+            case CLUSTER_FULL_SYNC:
+                handleFullSync(ctx, msg);
+                break;
+            case CLUSTER_INCREMENTAL_SYNC:
+                handleIncrementalSync(ctx, msg);
+                break;
+            case CLUSTER_CONFIG_FORWARD:
+                handleConfigForward(ctx, msg);
+                break;
+            case CLUSTER_NODE_JOIN:
+                handleNodeJoin(ctx, msg);
+                break;
+            case CLUSTER_NODE_LEAVE:
+                handleNodeLeave(ctx, msg);
+                break;
+            case CLUSTER_ALARM_SYNC:
+                handleAlarmSync(ctx, msg);
+                break;
+            default:
+                log.warn("Unexpected message type on cluster channel: {}", msg.getType());
+                break;
         }
     }
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof IdleStateEvent event) {
+        if (evt instanceof IdleStateEvent) {
+            IdleStateEvent event = (IdleStateEvent) evt;
             if (event.state() == IdleState.READER_IDLE) {
                 log.warn("Cluster peer idle timeout, closing: {}", ctx.channel().remoteAddress());
                 ctx.close();
@@ -96,9 +114,9 @@ public class ClusterChannelHandler extends SimpleChannelInboundHandler<Message> 
             }
         }
         // Ensure nodeId is remapped (handles first heartbeat before NODE_JOIN processed)
-        if (nodeAddress != null && !nodeAddress.isBlank()) {
+        if (nodeAddress != null && !nodeAddress.trim().isEmpty()) {
             if (transportClient != null) {
-                var existingNode = memberManager.findNodeByAddress(nodeAddress);
+                ClusterNode existingNode = memberManager.findNodeByAddress(nodeAddress);
                 if (existingNode != null && !existingNode.getNodeId().equals(nodeId)) {
                     transportClient.remapPeerChannel(existingNode.getNodeId(), nodeId);
                 }
@@ -121,7 +139,7 @@ public class ClusterChannelHandler extends SimpleChannelInboundHandler<Message> 
         String sourceNodeId = msg.getAppId();
         String body = msg.getBody();
 
-        if (body == null || body.isBlank()) {
+        if (body == null || body.trim().isEmpty()) {
             // This is a full sync request - respond with our local data
             log.info("Full sync request from node: {}", sourceNodeId);
             dataSyncer.handleFullSyncRequest(ctx, sourceNodeId);
@@ -175,7 +193,7 @@ public class ClusterChannelHandler extends SimpleChannelInboundHandler<Message> 
         log.info("Cluster node join notification: nodeId={}, address={}", nodeId, nodeAddress);
         // Remap peer channel if nodeId changed
         if (transportClient != null && nodeAddress != null) {
-            var existingNode = memberManager.findNodeByAddress(nodeAddress);
+            ClusterNode existingNode = memberManager.findNodeByAddress(nodeAddress);
             if (existingNode != null && !existingNode.getNodeId().equals(nodeId)) {
                 transportClient.remapPeerChannel(existingNode.getNodeId(), nodeId);
             }

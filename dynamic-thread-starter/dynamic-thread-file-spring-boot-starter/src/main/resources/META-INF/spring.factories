@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.dynamic.thread.starter.file.config.FileStarterAutoConfiguration

@@ -35,7 +35,7 @@ public class EtcdConfigChangeListener extends AbstractConfigChangeListener {
     @Override
     public void startListening() {
         DynamicThreadPoolProperties.EtcdProperties etcdProps = properties.getEtcd();
-        if (etcdProps == null || etcdProps.getEndpoints() == null || etcdProps.getEndpoints().isBlank()) {
+        if (etcdProps == null || etcdProps.getEndpoints() == null || etcdProps.getEndpoints().trim().isEmpty()) {
             log.warn("ETCD endpoints not configured, skipping ETCD listener registration");
             return;
         }
@@ -51,7 +51,7 @@ public class EtcdConfigChangeListener extends AbstractConfigChangeListener {
                             .toArray(String[]::new));
 
             // Add authentication if configured
-            if (etcdProps.getUsername() != null && !etcdProps.getUsername().isBlank() 
+            if (etcdProps.getUsername() != null && !etcdProps.getUsername().trim().isEmpty() 
                     && etcdProps.getPassword() != null) {
                 clientBuilder.user(ByteSequence.from(etcdProps.getUsername(), StandardCharsets.UTF_8))
                         .password(ByteSequence.from(etcdProps.getPassword(), StandardCharsets.UTF_8));
@@ -122,7 +122,7 @@ public class EtcdConfigChangeListener extends AbstractConfigChangeListener {
             KeyValue kv = response.getKvs().get(0);
             String configContent = kv.getValue().toString(StandardCharsets.UTF_8);
 
-            if (configContent == null || configContent.isBlank()) {
+            if (configContent == null || configContent.trim().isEmpty()) {
                 log.debug("Configuration content is empty at key: {}", keyPrefix);
                 return;
             }
@@ -146,7 +146,7 @@ public class EtcdConfigChangeListener extends AbstractConfigChangeListener {
         ByteSequence key = ByteSequence.from(keyPrefix, StandardCharsets.UTF_8);
 
         // Watch with prefix option to watch all keys under the prefix
-        WatchOption watchOption = WatchOption.builder()
+        WatchOption watchOption = WatchOption.newBuilder()
                 .isPrefix(true)
                 .build();
 
@@ -162,7 +162,7 @@ public class EtcdConfigChangeListener extends AbstractConfigChangeListener {
 
                     if (eventType == WatchEvent.EventType.PUT) {
                         String configContent = keyValue.getValue().toString(StandardCharsets.UTF_8);
-                        if (configContent != null && !configContent.isBlank()) {
+                        if (configContent != null && !configContent.trim().isEmpty()) {
                             DynamicThreadPoolProperties.EtcdProperties etcdProps = properties.getEtcd();
                             String configType = etcdProps.getConfigType() != null 
                                     ? etcdProps.getConfigType() 

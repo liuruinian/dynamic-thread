@@ -3,13 +3,12 @@ package com.dynamic.thread.core.notify;
 import com.dynamic.thread.core.enums.NotifyPlatformEnum;
 import com.dynamic.thread.core.model.ThreadPoolState;
 import com.dynamic.thread.core.util.CommonComponents;
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.net.URI;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
@@ -47,7 +46,7 @@ public class WebhookNotifyPlatform extends AbstractHttpNotifyPlatform {
     @Override
     public Map<String, String> getConfig() {
         Map<String, String> config = super.getConfig();
-        config.put("hasSecret", secret != null && !secret.isBlank() ? "true" : "false");
+        config.put("hasSecret", secret != null && !secret.trim().isEmpty() ? "true" : "false");
         return config;
     }
 
@@ -79,7 +78,7 @@ public class WebhookNotifyPlatform extends AbstractHttpNotifyPlatform {
      * Send webhook request with custom payload
      */
     private boolean sendWebhook(Map<String, Object> payload) {
-        if (webhookUrl == null || webhookUrl.isBlank()) {
+        if (webhookUrl == null || webhookUrl.trim().isEmpty()) {
             log.warn("[Webhook] Webhook URL is not configured");
             return false;
         }
@@ -87,29 +86,25 @@ public class WebhookNotifyPlatform extends AbstractHttpNotifyPlatform {
         try {
             String jsonBody = CommonComponents.objectMapper().writeValueAsString(payload);
 
-            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                    .uri(URI.create(webhookUrl))
+            HttpRequest request = HttpRequest.post(webhookUrl)
                     .header("Content-Type", "application/json")
                     .header("User-Agent", "DynamicThreadPool-Webhook/1.0")
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                    .timeout(CommonComponents.defaultRequestTimeout());
+                    .timeout(CommonComponents.defaultRequestTimeoutMs());
 
             // Add authorization header if secret is provided
             if (secret != null && !secret.isEmpty()) {
-                requestBuilder.header("Authorization", "Bearer " + secret);
-                requestBuilder.header("X-Signature", generateSignature(jsonBody));
+                request.header("Authorization", "Bearer " + secret);
+                request.header("X-Signature", generateSignature(jsonBody));
             }
 
-            HttpRequest request = requestBuilder.build();
-            HttpResponse<String> response = CommonComponents.httpClient()
-                    .send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse response = request.body(jsonBody).execute();
 
-            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+            if (response.getStatus() >= 200 && response.getStatus() < 300) {
                 log.info("[Webhook] Notification sent successfully to {}", webhookUrl);
                 return true;
             } else {
                 log.warn("[Webhook] Notification failed with status {}: {}",
-                        response.statusCode(), response.body());
+                        response.getStatus(), response.body());
                 return false;
             }
         } catch (Exception e) {

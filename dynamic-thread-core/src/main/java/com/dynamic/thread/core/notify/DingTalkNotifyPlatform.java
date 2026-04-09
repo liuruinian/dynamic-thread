@@ -42,7 +42,7 @@ public class DingTalkNotifyPlatform extends AbstractHttpNotifyPlatform {
     @Override
     public Map<String, String> getConfig() {
         Map<String, String> config = super.getConfig();
-        if (secret != null && !secret.isBlank()) {
+        if (secret != null && !secret.trim().isEmpty()) {
             // Mask secret for security: show first 6 and last 4 chars
             String masked = secret.length() > 10
                     ? secret.substring(0, 6) + "****" + secret.substring(secret.length() - 4)
@@ -68,7 +68,7 @@ public class DingTalkNotifyPlatform extends AbstractHttpNotifyPlatform {
 
     @Override
     protected String buildTargetUrl() {
-        if (secret == null || secret.isBlank()) {
+        if (secret == null || secret.trim().isEmpty()) {
             return webhookUrl;
         }
 

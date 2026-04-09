@@ -148,17 +148,17 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Message> {
         try {
             // Input validation
             ValidationResult appIdResult = inputValidator.validateAppId(msg.getAppId());
-            if (!appIdResult.valid()) {
-                log.warn("Registration rejected: invalid appId. {}", appIdResult.message());
-                Message response = Message.response(msg.getMessageId(), false, appIdResult.message());
+            if (!appIdResult.isValid()) {
+                log.warn("Registration rejected: invalid appId. {}", appIdResult.getMessage());
+                Message response = Message.response(msg.getMessageId(), false, appIdResult.getMessage());
                 ctx.writeAndFlush(response);
                 return;
             }
             
             ValidationResult instanceIdResult = inputValidator.validateInstanceId(msg.getInstanceId());
-            if (!instanceIdResult.valid()) {
-                log.warn("Registration rejected: invalid instanceId. {}", instanceIdResult.message());
-                Message response = Message.response(msg.getMessageId(), false, instanceIdResult.message());
+            if (!instanceIdResult.isValid()) {
+                log.warn("Registration rejected: invalid instanceId. {}", instanceIdResult.getMessage());
+                Message response = Message.response(msg.getMessageId(), false, instanceIdResult.getMessage());
                 ctx.writeAndFlush(response);
                 return;
             }
@@ -175,10 +175,10 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Message> {
             RegistrationInfo info = objectMapper.readValue(msg.getBody(), RegistrationInfo.class);
             
             // Validate pool count
-            ValidationResult poolCountResult = inputValidator.validatePoolCount(info.threadPoolIds().size());
-            if (!poolCountResult.valid()) {
-                log.warn("Registration rejected: {}", poolCountResult.message());
-                Message response = Message.response(msg.getMessageId(), false, poolCountResult.message());
+            ValidationResult poolCountResult = inputValidator.validatePoolCount(info.getThreadPoolIds().size());
+            if (!poolCountResult.isValid()) {
+                log.warn("Registration rejected: {}", poolCountResult.getMessage());
+                Message response = Message.response(msg.getMessageId(), false, poolCountResult.getMessage());
                 ctx.writeAndFlush(response);
                 return;
             }
@@ -194,7 +194,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Message> {
                     msg.getAppId(),
                     msg.getInstanceId(),
                     ctx.channel(),
-                    info.threadPoolIds()
+                    info.getThreadPoolIds()
             );
 
             // Send success response
@@ -202,7 +202,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Message> {
             ctx.writeAndFlush(response);
             
             log.info("Client registered: appId={}, instanceId={}, threadPools={}",
-                    msg.getAppId(), msg.getInstanceId(), info.threadPoolIds().size());
+                    msg.getAppId(), msg.getInstanceId(), info.getThreadPoolIds().size());
                     
         } catch (Exception e) {
             log.error("Failed to handle registration: {}", e.getMessage());
@@ -352,9 +352,11 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Message> {
     /**
      * Registration info from client
      */
-    public record RegistrationInfo(
-            String appId,
-            String instanceId,
-            Collection<String> threadPoolIds
-    ) {}
+    @lombok.Data
+    @lombok.AllArgsConstructor
+    public static class RegistrationInfo {
+        private final String appId;
+        private final String instanceId;
+        private final Collection<String> threadPoolIds;
+    }
 }

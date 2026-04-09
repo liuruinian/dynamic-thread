@@ -3,7 +3,7 @@ package com.dynamic.thread.server.auth;
 import cn.dev33.satoken.stp.StpUtil;
 import com.dynamic.thread.server.config.ServerProperties;
 import com.dynamic.thread.server.security.LoginAttemptLimiter;
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -106,13 +106,13 @@ public class AuthController {
      */
     private String getClientIp(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
+        if (xForwardedFor != null && !xForwardedFor.trim().isEmpty()) {
             // Take the first IP if there are multiple
             return xForwardedFor.split(",")[0].trim();
         }
         
         String xRealIp = request.getHeader("X-Real-IP");
-        if (xRealIp != null && !xRealIp.isBlank()) {
+        if (xRealIp != null && !xRealIp.trim().isEmpty()) {
             return xRealIp;
         }
         
