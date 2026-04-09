@@ -124,7 +124,7 @@ mvn clean deploy -Prelease
 ### 仅发布 starter 模块
 
 ```bash
-mvn clean deploy -Prelease -pl dynamic-thread-core,ynamic-thread-agent,dynamic-thread-spring-base,dynamic-thread-web-spring-boot-starter,dynamic-thread-nacos-cloud-spring-boot-starter -am
+mvn clean deploy -Prelease -pl dynamic-thread-core,dynamic-thread-agent,dynamic-thread-spring-base,dynamic-thread-starter -am
 ```
 
 ### 跳过示例和 Server 模块
