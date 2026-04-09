@@ -94,7 +94,7 @@ dynamic-thread:
 logging:
   level:
     root: INFO
-    com.dynamic.thread: ${LOG_LEVEL:DEBUG}
+    com.dynamic.thread: ${LOG_LEVEL:INFO}
   file:
     path: ${LOG_PATH:logs}
 

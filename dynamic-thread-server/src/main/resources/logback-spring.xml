@@ -1,33 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration scan="true" scanPeriod="30 seconds">
+<configuration scan="true" scanPeriod="60 seconds">
+    <!-- Graceful shutdown: flush all logs before JVM exits -->
+    <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook">
+        <delay>2000</delay>
+    </shutdownHook>
+
     <!-- Include Spring Boot defaults for color support -->
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-    
+
     <!-- ============================= Properties ============================= -->
     <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="dynamic-thread-server"/>
     <property name="LOG_HOME" value="${LOG_PATH:-logs}"/>
     <property name="LOG_MAX_HISTORY" value="${LOG_MAX_HISTORY:-30}"/>
-    <property name="LOG_MAX_FILE_SIZE" value="${LOG_MAX_FILE_SIZE:-100MB}"/>
-    <property name="LOG_TOTAL_SIZE_CAP" value="${LOG_TOTAL_SIZE_CAP:-3GB}"/>
-    
+    <property name="LOG_MAX_FILE_SIZE" value="${LOG_MAX_FILE_SIZE:-200MB}"/>
+    <property name="LOG_TOTAL_SIZE_CAP" value="${LOG_TOTAL_SIZE_CAP:-5GB}"/>
+
     <!-- Console color pattern (for development) -->
-    <property name="CONSOLE_PATTERN" 
+    <property name="CONSOLE_PATTERN"
               value="%d{yyyy-MM-dd HH:mm:ss.SSS} %clr(%5level){cyan} %clr([%15.15thread]){magenta} %clr(%-40.40logger{39}){blue} : %clr(%X{traceId:-}){yellow} %msg%n"/>
-    
+
+    <!-- Console plain pattern (for production container stdout, no color) -->
+    <property name="CONSOLE_PLAIN_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %5level [%15.15thread] %-40.40logger{39} : [%X{traceId:-N/A}] %msg%n"/>
+
     <!-- File pattern (structured for production) -->
-    <property name="FILE_PATTERN" 
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%thread] [%logger{50}] [traceId=%X{traceId:-N/A}] - %msg%n"/>
-    
-    <!-- JSON pattern for log aggregation systems -->
+    <property name="FILE_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [%logger{50}] [traceId=%X{traceId:-N/A}] - %msg%n"/>
+
+    <!-- JSON pattern for log aggregation systems (ELK/Loki) -->
     <property name="JSON_PATTERN"
-              value='{"timestamp":"%d{yyyy-MM-dd HH:mm:ss.SSS}","level":"%level","thread":"%thread","logger":"%logger","traceId":"%X{traceId:-}","message":"%msg"}%n'/>
+              value='{"@timestamp":"%d{yyyy-MM-dd&apos;T&apos;HH:mm:ss.SSSZ}","level":"%level","thread":"%thread","logger":"%logger","traceId":"%X{traceId:-}","app":"%property{APP_NAME}","msg":"%msg"}%n'/>
 
     <!-- ============================= Appenders ============================= -->
-    
-    <!-- Console Appender -->
+
+    <!-- Console Appender (color, for dev/test) -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${CONSOLE_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Console Appender (plain, for production container stdout) -->
+    <appender name="CONSOLE_PLAIN" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_PLAIN_PATTERN}</pattern>
             <charset>UTF-8</charset>
         </encoder>
     </appender>
@@ -38,9 +55,10 @@
         <encoder>
             <pattern>${FILE_PATTERN}</pattern>
             <charset>UTF-8</charset>
+            <immediateFlush>false</immediateFlush>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/${APP_NAME}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <fileNamePattern>${LOG_HOME}/archived/${APP_NAME}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
             <maxFileSize>${LOG_MAX_FILE_SIZE}</maxFileSize>
             <maxHistory>${LOG_MAX_HISTORY}</maxHistory>
             <totalSizeCap>${LOG_TOTAL_SIZE_CAP}</totalSizeCap>
@@ -48,7 +66,7 @@
         </rollingPolicy>
     </appender>
 
-    <!-- Error Log Appender - Errors Only -->
+    <!-- Error Log Appender - ERROR only -->
     <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/${APP_NAME}-error.log</file>
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
@@ -57,11 +75,32 @@
         <encoder>
             <pattern>${FILE_PATTERN}</pattern>
             <charset>UTF-8</charset>
+            <immediateFlush>true</immediateFlush>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/${APP_NAME}-error.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-            <maxFileSize>${LOG_MAX_FILE_SIZE}</maxFileSize>
-            <maxHistory>${LOG_MAX_HISTORY}</maxHistory>
+            <fileNamePattern>${LOG_HOME}/archived/${APP_NAME}-error.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>60</maxHistory>
+            <totalSizeCap>2GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Warn Log Appender - WARN and above (excludes ERROR via filter) -->
+    <appender name="WARN_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/${APP_NAME}-warn.log</file>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>WARN</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>${FILE_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/archived/${APP_NAME}-warn.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>15</maxHistory>
             <totalSizeCap>1GB</totalSizeCap>
         </rollingPolicy>
     </appender>
@@ -70,62 +109,94 @@
     <appender name="ACCESS_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/${APP_NAME}-access.log</file>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{traceId:-N/A}] [%X{method}] [%X{uri}] [%X{clientIp}] - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{traceId:-N/A}] %X{method} %X{uri} %X{clientIp} %X{statusCode:-} %X{elapsed:-}ms - %msg%n</pattern>
             <charset>UTF-8</charset>
+            <immediateFlush>false</immediateFlush>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/${APP_NAME}-access.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-            <maxFileSize>${LOG_MAX_FILE_SIZE}</maxFileSize>
+            <fileNamePattern>${LOG_HOME}/archived/${APP_NAME}-access.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>200MB</maxFileSize>
             <maxHistory>7</maxHistory>
-            <totalSizeCap>1GB</totalSizeCap>
+            <totalSizeCap>2GB</totalSizeCap>
         </rollingPolicy>
     </appender>
 
-    <!-- Async Appender for FILE (improves performance) -->
+    <!-- ============================= Async Wrappers ============================= -->
+
+    <!-- Async FILE: high throughput, allow discard TRACE/DEBUG when queue > 80% -->
     <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
-        <discardingThreshold>0</discardingThreshold>
-        <queueSize>1024</queueSize>
+        <discardingThreshold>20</discardingThreshold>
+        <queueSize>2048</queueSize>
         <neverBlock>true</neverBlock>
         <includeCallerData>false</includeCallerData>
         <appender-ref ref="FILE"/>
     </appender>
 
-    <!-- Async Appender for ERROR_FILE -->
+    <!-- Async ERROR: never discard, allow blocking to guarantee error delivery -->
     <appender name="ASYNC_ERROR" class="ch.qos.logback.classic.AsyncAppender">
         <discardingThreshold>0</discardingThreshold>
-        <queueSize>256</queueSize>
+        <queueSize>512</queueSize>
         <neverBlock>false</neverBlock>
         <includeCallerData>true</includeCallerData>
         <appender-ref ref="ERROR_FILE"/>
     </appender>
 
+    <!-- Async WARN -->
+    <appender name="ASYNC_WARN" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>0</discardingThreshold>
+        <queueSize>256</queueSize>
+        <neverBlock>true</neverBlock>
+        <includeCallerData>false</includeCallerData>
+        <appender-ref ref="WARN_FILE"/>
+    </appender>
+
+    <!-- Async ACCESS -->
+    <appender name="ASYNC_ACCESS" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>0</discardingThreshold>
+        <queueSize>1024</queueSize>
+        <neverBlock>true</neverBlock>
+        <includeCallerData>false</includeCallerData>
+        <appender-ref ref="ACCESS_FILE"/>
+    </appender>
+
     <!-- ============================= Loggers ============================= -->
-    
+
     <!-- Access Logger (for request tracking) -->
     <logger name="ACCESS_LOG" level="INFO" additivity="false">
-        <appender-ref ref="ACCESS_FILE"/>
+        <appender-ref ref="ASYNC_ACCESS"/>
     </logger>
 
     <!-- Framework loggers - reduce noise -->
-    <logger name="org.springframework" level="INFO"/>
-    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.springframework.boot.web.embedded" level="INFO"/>
+    <logger name="org.springframework.web" level="WARN"/>
     <logger name="org.apache.catalina" level="WARN"/>
     <logger name="org.apache.tomcat" level="WARN"/>
-    <logger name="io.netty" level="INFO"/>
+    <logger name="org.apache.coyote" level="WARN"/>
+    <logger name="io.netty" level="WARN"/>
     <logger name="cn.dev33.satoken" level="WARN"/>
-    
-    <!-- SQL logging (enable for debugging) -->
+    <logger name="com.zaxxer.hikari" level="WARN"/>
+    <logger name="org.mybatis" level="WARN"/>
+    <logger name="com.alibaba.nacos" level="WARN"/>
+
+    <!-- SQL logging (enable for debugging, keep WARN in prod) -->
     <logger name="org.hibernate.SQL" level="WARN"/>
     <logger name="org.hibernate.type.descriptor.sql" level="WARN"/>
+    <logger name="java.sql" level="WARN"/>
+
+    <!-- Suppress noisy loggers -->
+    <logger name="sun.rmi" level="WARN"/>
+    <logger name="javax.management" level="WARN"/>
+    <logger name="jdk.event.security" level="WARN"/>
 
     <!-- ============================= Profile-based Configuration ============================= -->
-    
+
     <!-- Development Profile -->
     <springProfile name="dev,default">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
         </root>
-        
+
         <logger name="com.dynamic.thread" level="DEBUG" additivity="false">
             <appender-ref ref="CONSOLE"/>
         </logger>
@@ -137,7 +208,7 @@
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="ASYNC_FILE"/>
         </root>
-        
+
         <logger name="com.dynamic.thread" level="DEBUG" additivity="false">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="ASYNC_FILE"/>
@@ -147,15 +218,17 @@
     <!-- Production Profile -->
     <springProfile name="prod">
         <root level="INFO">
-            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="CONSOLE_PLAIN"/>
             <appender-ref ref="ASYNC_FILE"/>
             <appender-ref ref="ASYNC_ERROR"/>
+            <appender-ref ref="ASYNC_WARN"/>
         </root>
-        
+
         <logger name="com.dynamic.thread" level="INFO" additivity="false">
-            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="CONSOLE_PLAIN"/>
             <appender-ref ref="ASYNC_FILE"/>
             <appender-ref ref="ASYNC_ERROR"/>
+            <appender-ref ref="ASYNC_WARN"/>
         </logger>
     </springProfile>
 

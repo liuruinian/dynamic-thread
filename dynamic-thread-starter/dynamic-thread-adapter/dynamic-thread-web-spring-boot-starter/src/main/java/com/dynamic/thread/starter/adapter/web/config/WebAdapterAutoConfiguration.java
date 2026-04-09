@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -40,7 +39,6 @@ import java.util.List;
 @Configuration
 @ConditionalOnWebApplication
 @ConditionalOnProperty(prefix = "dynamic-thread", name = "enabled", havingValue = "true", matchIfMissing = true)
-@AutoConfigureAfter(name = "org.springframework.boot.actuate.autoconfigure.metrics.CompositeMeterRegistryAutoConfiguration")
 public class WebAdapterAutoConfiguration {
 
     // ==================== Adapter Beans ====================
@@ -91,16 +89,20 @@ public class WebAdapterAutoConfiguration {
     // ==================== Metrics Integration ====================
 
     /**
-     * Web container metrics collector for Prometheus
+     * Metrics configuration - isolated in nested class to ensure MeterRegistry
+     * is available when condition is evaluated.
      */
-    @Bean
-    @ConditionalOnMissingBean
+    @Configuration
     @ConditionalOnClass(MeterRegistry.class)
-    @ConditionalOnBean(MeterRegistry.class)
-    public WebContainerMetricsCollector webContainerMetricsCollector(
-            WebContainerThreadPoolManager manager,
-            MeterRegistry meterRegistry) {
-        return new WebContainerMetricsCollector(manager, meterRegistry);
+    static class MetricsConfiguration {
+
+        @Bean
+        @ConditionalOnMissingBean
+        public WebContainerMetricsCollector webContainerMetricsCollector(
+                WebContainerThreadPoolManager manager,
+                MeterRegistry meterRegistry) {
+            return new WebContainerMetricsCollector(manager, meterRegistry);
+        }
     }
 
     // ==================== Reporter Integration ====================

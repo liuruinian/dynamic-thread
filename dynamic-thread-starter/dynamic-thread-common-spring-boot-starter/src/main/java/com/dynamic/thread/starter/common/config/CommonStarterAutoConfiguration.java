@@ -5,8 +5,6 @@ import com.dynamic.thread.starter.common.metrics.ThreadPoolMetricsCollector;
 import com.dynamic.thread.starter.common.parser.ConfigParser;
 import com.dynamic.thread.starter.common.refresher.ThreadPoolRefresher;
 import io.micrometer.core.instrument.MeterRegistry;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -21,7 +19,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Configuration
 @EnableScheduling
 @ConditionalOnProperty(prefix = "dynamic-thread", name = "enabled", havingValue = "true", matchIfMissing = true)
-@AutoConfigureAfter(name = "org.springframework.boot.actuate.autoconfigure.metrics.CompositeMeterRegistryAutoConfiguration")
 public class CommonStarterAutoConfiguration {
 
     @Bean
@@ -38,13 +35,20 @@ public class CommonStarterAutoConfiguration {
         return new ThreadPoolRefresher(registry, parser, eventPublisher);
     }
 
-    @Bean
-    @ConditionalOnMissingBean
+    /**
+     * Metrics configuration - isolated in nested class to ensure MeterRegistry
+     * is available when condition is evaluated.
+     */
+    @Configuration
     @ConditionalOnClass(MeterRegistry.class)
-    @ConditionalOnBean(MeterRegistry.class)
-    public ThreadPoolMetricsCollector threadPoolMetricsCollector(
-            ThreadPoolRegistry registry,
-            MeterRegistry meterRegistry) {
-        return new ThreadPoolMetricsCollector(registry, meterRegistry);
+    static class MetricsConfiguration {
+
+        @Bean
+        @ConditionalOnMissingBean
+        public ThreadPoolMetricsCollector threadPoolMetricsCollector(
+                ThreadPoolRegistry registry,
+                MeterRegistry meterRegistry) {
+            return new ThreadPoolMetricsCollector(registry, meterRegistry);
+        }
     }
 }
