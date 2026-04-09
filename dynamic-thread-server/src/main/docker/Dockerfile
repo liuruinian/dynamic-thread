@@ -7,7 +7,7 @@
 #
 # Build via Maven (recommended):
 #   mvn clean package -pl dynamic-thread-server -am
-#   => automatically builds Docker image: dynamic-thread-server:1.0.0
+#   => automatically builds Docker image: dynamic-thread-server:jdk8_springboot2.x
 #
 # Build via Maven (skip Docker):
 #   mvn clean package -pl dynamic-thread-server -am -Ddocker.skip=true
@@ -35,7 +35,7 @@ RUN mkdir -p /opt/app /opt/logs/logs /opt/logs/gc /opt/logs/heapdump \
 WORKDIR /opt/app
 
 # --- Copy Artifact (assembled by fabric8 docker-maven-plugin into maven/) ---
-COPY --chown=dtpool:dtpool maven/dynamic-thread-server-1.0.0.jar app.jar
+COPY --chown=dtpool:dtpool maven/dynamic-thread-server-jdk8_springboot2.x.jar app.jar
 
 # ==========================================================================
 # Environment Variables - All configurable at runtime
