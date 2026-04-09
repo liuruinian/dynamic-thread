@@ -103,7 +103,7 @@ gpg --keyserver keyserver.ubuntu.com --send-keys YOUR_KEY_ID
 确保版本号不是 SNAPSHOT（发布正式版时）：
 
 ```xml
-<version>1.0.0</version>
+<version>jdk8_springboot2.x</version>
 ```
 
 ### 3. 本地测试构建

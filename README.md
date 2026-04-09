@@ -179,21 +179,21 @@ npm run build
 <dependency>
     <groupId>com.dynamic.thread</groupId>
     <artifactId>dynamic-thread-nacos-cloud-spring-boot-starter</artifactId>
-    <version>1.0.0</version>
+    <version>jdk8_springboot2.x</version>
 </dependency>
 
 <!-- Agent 连接 Dashboard Server -->
 <dependency>
     <groupId>com.dynamic.thread</groupId>
     <artifactId>dynamic-thread-agent</artifactId>
-    <version>1.0.0</version>
+    <version>jdk8_springboot2.x</version>
 </dependency>
 
 <!-- Web 容器适配（可选） -->
 <dependency>
     <groupId>com.dynamic.thread</groupId>
     <artifactId>dynamic-thread-web-spring-boot-starter</artifactId>
-    <version>1.0.0</version>
+    <version>jdk8_springboot2.x</version>
 </dependency>
 ```
 

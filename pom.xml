@@ -6,7 +6,7 @@
 
     <groupId>io.github.liuruinian</groupId>
     <artifactId>dynamic-thread</artifactId>
-    <version>1.0.0</version>
+    <version>jdk8_springboot2.x</version>
     <packaging>pom</packaging>
 
     <name>Dynamic Thread Pool</name>
@@ -65,7 +65,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- Project Version -->
-        <dynamic-thread.version>1.0.0</dynamic-thread.version>
+        <dynamic-thread.version>jdk8_springboot2.x</dynamic-thread.version>
 
         <!-- Spring Boot -->
         <spring-boot.version>2.7.18</spring-boot.version>
@@ -133,7 +133,7 @@
             <dependency>
                 <groupId>io.github.liuruinian</groupId>
                 <artifactId>dynamic-thread-core</artifactId>
-                <version>1.0.0</version>
+                <version>jdk8_springboot2.x</version>
             </dependency>
             <dependency>
                 <groupId>io.github.liuruinian</groupId>

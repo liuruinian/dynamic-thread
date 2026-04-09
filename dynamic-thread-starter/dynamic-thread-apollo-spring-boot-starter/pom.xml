@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.github.liuruinian</groupId>
         <artifactId>dynamic-thread-starter</artifactId>
-        <version>1.0.0</version>
+        <version>jdk8_springboot2.x</version>
     </parent>
 
     <artifactId>dynamic-thread-apollo-spring-boot-starter</artifactId>
