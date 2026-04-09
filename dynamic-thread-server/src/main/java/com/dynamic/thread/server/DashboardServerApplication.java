@@ -1,5 +1,6 @@
 package com.dynamic.thread.server;
 
+import com.dynamic.thread.server.cluster.ClusterAutoConfiguration;
 import com.dynamic.thread.server.config.ServerProperties;
 import com.dynamic.thread.server.handler.ServerChannelHandler;
 import com.dynamic.thread.server.netty.DashboardNettyServer;
@@ -11,6 +12,7 @@ import com.dynamic.thread.server.security.LoginAttemptLimiter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -68,8 +70,14 @@ public class DashboardServerApplication {
     @Bean
     public ServerChannelHandler serverChannelHandler(ClientRegistry clientRegistry,
                                                      ConnectionRateLimiter rateLimiter,
-                                                     InputValidator inputValidator) {
-        return new ServerChannelHandler(clientRegistry, rateLimiter, inputValidator);
+                                                     InputValidator inputValidator,
+                                                     @Autowired(required = false) ClusterAutoConfiguration clusterAutoConfig) {
+        ServerChannelHandler handler = new ServerChannelHandler(clientRegistry, rateLimiter, inputValidator);
+        // Wire handler into cluster config for config forwarding
+        if (clusterAutoConfig != null) {
+            clusterAutoConfig.wireServerChannelHandler(handler);
+        }
+        return handler;
     }
 
     @Bean

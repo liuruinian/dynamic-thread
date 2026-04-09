@@ -38,7 +38,7 @@
     <scm>
         <connection>scm:git:git://github.com/liuruinian/dynamic-thread.git</connection>
         <developerConnection>scm:git:ssh://github.com:liuruinian/dynamic-thread.git</developerConnection>
-        <url>https://github.com/liuruinian/dynamic-thread/tree/main</url>
+        <url>https://github.com/liuruinian/dynamic-thread/tree/JDK21_SpringBoot3.2.5</url>
     </scm>
 
     <!-- Issue Management -->
@@ -95,6 +95,10 @@
 
         <!-- Test -->
         <junit.version>5.10.2</junit.version>
+
+        <!-- Docker -->
+        <docker-maven-plugin.version>0.45.1</docker-maven-plugin.version>
+        <docker.registry>docker.xuanyuan.run</docker.registry>
     </properties>
 
     <dependencyManagement>
@@ -267,6 +271,11 @@
                             </goals>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>${docker-maven-plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>

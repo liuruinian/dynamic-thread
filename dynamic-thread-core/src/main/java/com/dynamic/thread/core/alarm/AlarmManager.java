@@ -169,6 +169,22 @@ public class AlarmManager implements IAlarmManager {
         }
     }
 
+    /**
+     * Replace all alarm rules (used for cluster sync).
+     * Clears existing rules and replaces with the provided list.
+     */
+    public void replaceAllRules(List<AlarmRule> newRules) {
+        rules.clear();
+        if (newRules != null) {
+            for (AlarmRule rule : newRules) {
+                if (rule.getId() != null) {
+                    rules.put(rule.getId(), rule);
+                }
+            }
+        }
+        log.info("Replaced all alarm rules: {} rules loaded", rules.size());
+    }
+
     // ==================== Platform Management ====================
 
     /**

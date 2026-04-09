@@ -97,7 +97,8 @@ const navItems = [
   { path: '/alarm', title: '告警' },
   { path: '/reject-stats', title: '拒绝统计' },
   { path: '/web-container', title: 'Web容器' },
-  { path: '/server-monitor', title: '服务器' }
+  { path: '/server-monitor', title: '服务器' },
+  { path: '/cluster', title: '集群' }
 ]
 
 // 检查当前路由是否激活

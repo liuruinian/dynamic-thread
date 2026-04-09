@@ -1,12 +1,14 @@
 package com.dynamic.thread.server.controller;
 
 import com.dynamic.thread.core.model.ThreadPoolState;
+import com.dynamic.thread.server.cluster.ClusterMemberManager;
 import com.dynamic.thread.server.handler.ServerChannelHandler;
 import com.dynamic.thread.server.registry.ClientRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -23,6 +25,9 @@ public class ThreadPoolController {
     private final ClientRegistry clientRegistry;
     private final ServerChannelHandler channelHandler;
     private final ObjectMapper objectMapper;
+
+    @Autowired(required = false)
+    private ClusterMemberManager clusterMemberManager;
 
     /**
      * Get all connected apps
@@ -129,7 +134,21 @@ public class ThreadPoolController {
         result.put("clientCount", clients.size());
         result.put("onlineCount", onlineCount);
         result.put("appCount", clientRegistry.listApps().size());
-        
+
+        // Add cluster info if available
+        if (clusterMemberManager != null) {
+            Map<String, Object> clusterInfo = new HashMap<>();
+            clusterInfo.put("enabled", true);
+            clusterInfo.put("nodeId", clusterMemberManager.getSelfNode().getNodeId());
+            clusterInfo.put("totalMembers", clusterMemberManager.getMemberCount());
+            clusterInfo.put("healthyMembers", clusterMemberManager.getHealthyMemberCount());
+            clusterInfo.put("isLeader", clusterMemberManager.isLeader());
+            clusterInfo.put("localAgentCount", clientRegistry.getLocalClientCount());
+            result.put("cluster", clusterInfo);
+        } else {
+            result.put("cluster", Map.of("enabled", false));
+        }
+
         return result;
     }
 

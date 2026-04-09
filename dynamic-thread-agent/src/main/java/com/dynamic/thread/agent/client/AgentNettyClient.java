@@ -14,21 +14,32 @@ import lombok.extern.slf4j.Slf4j;
 
 import jakarta.annotation.PreDestroy;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Netty client for connecting to Dashboard Server.
+ * Supports multi-address configuration with Round-Robin failover for cluster mode.
  */
 @Slf4j
 public class AgentNettyClient {
 
     private final AgentProperties properties;
     private final AgentChannelHandler channelHandler;
-    
+
     private EventLoopGroup workerGroup;
     private Channel channel;
     private Bootstrap bootstrap;
     private volatile boolean running = false;
+
+    /** Resolved server address list */
+    private List<InetSocketAddress> serverAddresses;
+    /** Current connection index in the address list */
+    private final AtomicInteger currentIndex = new AtomicInteger(0);
+    /** Number of consecutive failures in current round */
+    private volatile int consecutiveFailures = 0;
 
     public AgentNettyClient(AgentProperties properties, AgentChannelHandler channelHandler) {
         this.properties = properties;
@@ -45,6 +56,7 @@ public class AgentNettyClient {
         }
 
         running = true;
+        initServerAddresses();
         workerGroup = new NioEventLoopGroup();
 
         bootstrap = new Bootstrap();
@@ -57,7 +69,7 @@ public class AgentNettyClient {
                     @Override
                     protected void initChannel(SocketChannel ch) {
                         ChannelPipeline pipeline = ch.pipeline();
-                        
+
                         // Idle state handler for heartbeat
                         pipeline.addLast(new IdleStateHandler(
                                 properties.getHeartbeat().getReadIdleTimeout(),
@@ -65,10 +77,10 @@ public class AgentNettyClient {
                                 0,
                                 TimeUnit.SECONDS
                         ));
-                        
+
                         // Message codec
                         pipeline.addLast(new MessageCodec());
-                        
+
                         // Business handler
                         pipeline.addLast(channelHandler);
                     }
@@ -78,33 +90,78 @@ public class AgentNettyClient {
     }
 
     /**
-     * Connect to server
+     * Initialize the server address list.
+     * Priority: addresses list > host:port single address.
+     */
+    private void initServerAddresses() {
+        serverAddresses = new ArrayList<>();
+        AgentProperties.ServerConfig serverConfig = properties.getServer();
+
+        if (serverConfig.getAddresses() != null && !serverConfig.getAddresses().isEmpty()) {
+            for (String addr : serverConfig.getAddresses()) {
+                String[] parts = addr.split(":");
+                if (parts.length == 2) {
+                    try {
+                        serverAddresses.add(new InetSocketAddress(parts[0].trim(), Integer.parseInt(parts[1].trim())));
+                    } catch (NumberFormatException e) {
+                        log.warn("Invalid server address format: {}, skipping", addr);
+                    }
+                } else {
+                    log.warn("Invalid server address format: {}, expected host:port", addr);
+                }
+            }
+        }
+
+        // Fallback to single host:port if no valid addresses configured
+        if (serverAddresses.isEmpty()) {
+            serverAddresses.add(new InetSocketAddress(serverConfig.getHost(), serverConfig.getPort()));
+        }
+
+        log.info("Initialized {} server address(es): {}", serverAddresses.size(), serverAddresses);
+    }
+
+    /**
+     * Connect to the next available server address using Round-Robin.
      */
     public void connect() {
         if (!running) {
             return;
         }
 
-        String host = properties.getServer().getHost();
-        int port = properties.getServer().getPort();
+        // If all addresses have been tried in this round, delay before retrying
+        if (consecutiveFailures >= serverAddresses.size()) {
+            log.warn("All {} server addresses failed, will retry after {}ms",
+                    serverAddresses.size(), properties.getServer().getReconnectDelay());
+            consecutiveFailures = 0;
+            scheduleReconnect();
+            return;
+        }
 
-        log.info("Connecting to Dashboard Server at {}:{}", host, port);
+        int index = currentIndex.get() % serverAddresses.size();
+        InetSocketAddress address = serverAddresses.get(index);
 
-        bootstrap.connect(new InetSocketAddress(host, port))
+        log.info("Connecting to Dashboard Server at {} (address {}/{})",
+                address, index + 1, serverAddresses.size());
+
+        bootstrap.connect(address)
                 .addListener((ChannelFutureListener) future -> {
                     if (future.isSuccess()) {
                         channel = future.channel();
-                        log.info("Connected to Dashboard Server successfully");
+                        consecutiveFailures = 0;
+                        log.info("Connected to Dashboard Server at {} successfully", address);
                     } else {
-                        log.warn("Failed to connect to Dashboard Server, will retry in {}ms",
-                                properties.getServer().getReconnectDelay());
-                        scheduleReconnect();
+                        log.warn("Failed to connect to Dashboard Server at {}", address);
+                        consecutiveFailures++;
+                        // Move to next address
+                        currentIndex.set((index + 1) % serverAddresses.size());
+                        // Try next address immediately (or delay if all failed - handled at top of connect())
+                        connect();
                     }
                 });
     }
 
     /**
-     * Schedule reconnection
+     * Schedule reconnection after delay
      */
     public void scheduleReconnect() {
         if (!running) {
@@ -140,15 +197,15 @@ public class AgentNettyClient {
     @PreDestroy
     public void stop() {
         running = false;
-        
+
         if (channel != null) {
             channel.close();
         }
-        
+
         if (workerGroup != null) {
             workerGroup.shutdownGracefully();
         }
-        
+
         log.info("Agent client stopped");
     }
 }

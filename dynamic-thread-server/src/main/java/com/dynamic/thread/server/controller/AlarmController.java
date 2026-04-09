@@ -11,9 +11,11 @@ import com.dynamic.thread.core.notify.EmailNotifyPlatform;
 import com.dynamic.thread.core.notify.NotifyPlatform;
 import com.dynamic.thread.core.notify.WeChatWorkNotifyPlatform;
 import com.dynamic.thread.core.notify.WebhookNotifyPlatform;
+import com.dynamic.thread.server.cluster.sync.DataSyncer;
 import com.dynamic.thread.server.config.ServerProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +36,25 @@ public class AlarmController {
 
     private final ServerProperties serverProperties;
 
+    @Autowired(required = false)
+    private DataSyncer dataSyncer;
+
     // ==================== Rule Management ====================
+
+    /**
+     * Sync alarm rules to cluster nodes (if cluster mode is enabled)
+     */
+    private void syncAlarmRulesToCluster() {
+        if (dataSyncer != null) {
+            try {
+                List<AlarmRule> allRules = AlarmManager.getInstance().listRules();
+                dataSyncer.syncAlarmRules(allRules);
+                log.debug("Alarm rules synced to cluster, count={}", allRules.size());
+            } catch (Exception e) {
+                log.warn("Failed to sync alarm rules to cluster: {}", e.getMessage());
+            }
+        }
+    }
 
     /**
      * Get all alarm rules
@@ -73,6 +93,7 @@ public class AlarmController {
         Map<String, Object> result = new HashMap<>();
         try {
             AlarmRule created = AlarmManager.getInstance().addRule(rule);
+            syncAlarmRulesToCluster();
             result.put("success", true);
             result.put("rule", created);
             result.put("message", I18nUtil.get("api.rule.added"));
@@ -96,6 +117,7 @@ public class AlarmController {
         try {
             rule.setId(id);
             AlarmRule updated = AlarmManager.getInstance().updateRule(rule);
+            syncAlarmRulesToCluster();
             result.put("success", true);
             result.put("rule", updated);
             result.put("message", I18nUtil.get("api.rule.updated"));
@@ -116,6 +138,7 @@ public class AlarmController {
         Map<String, Object> result = new HashMap<>();
         try {
             AlarmManager.getInstance().deleteRule(id);
+            syncAlarmRulesToCluster();
             result.put("success", true);
             result.put("message", I18nUtil.get("api.rule.deleted"));
             log.info("Alarm rule deleted: {}", id);
@@ -137,6 +160,7 @@ public class AlarmController {
         Map<String, Object> result = new HashMap<>();
         try {
             AlarmManager.getInstance().setRuleEnabled(id, enabled);
+            syncAlarmRulesToCluster();
             result.put("success", true);
             result.put("enabled", enabled);
             result.put("message", enabled ? I18nUtil.get("api.rule.enabled") : I18nUtil.get("api.rule.disabled"));

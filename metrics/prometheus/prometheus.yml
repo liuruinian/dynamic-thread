@@ -22,13 +22,9 @@ scrape_configs:
         target_label: instance
         replacement: 'nacos-cloud-example'
 
-  # Dynamic Thread Pool Dashboard Server
+  # Dynamic Thread Pool Dashboard Server (Standalone)
   - job_name: 'dynamic-thread-server'
     metrics_path: '/actuator/prometheus'
     scrape_interval: 5s
     static_configs:
       - targets: ['host.docker.internal:8080']
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: instance
-        replacement: 'dynamic-thread-server'

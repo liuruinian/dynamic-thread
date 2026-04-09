@@ -68,6 +68,12 @@ const routes = [
         name: 'ServerMonitor',
         component: () => import('@/views/ServerMonitor.vue'),
         meta: { title: '服务器监控' }
+      },
+      {
+        path: 'cluster',
+        name: 'ClusterNodes',
+        component: () => import('@/views/ClusterNodes.vue'),
+        meta: { title: '集群节点' }
       }
     ]
   }

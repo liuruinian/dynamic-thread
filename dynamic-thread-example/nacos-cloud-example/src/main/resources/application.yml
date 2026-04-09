@@ -30,6 +30,9 @@ dynamic-thread:
     enabled: true
     app-id: ${spring.application.name}
     server:
+      # Cluster mode: multiple server addresses for Round-Robin failover
+      addresses: ${DASHBOARD_ADDRESSES:127.0.0.1:9527,127.0.0.1:9537,127.0.0.1:9547}
+      # Single address fallback (addresses takes priority)
       host: ${DASHBOARD_HOST:127.0.0.1}
       port: ${DASHBOARD_PORT:9527}
     report:

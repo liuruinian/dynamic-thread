@@ -1,5 +1,11 @@
 # =============================================================================
-# Dynamic Thread Pool - Docker Compose Configuration
+# Dynamic Thread Pool - Docker Compose Configuration (Standalone)
+# =============================================================================
+#
+# Usage:
+#   1. Build image via Maven:  mvn clean package -pl dynamic-thread-server -am
+#   2. Start all services:     docker-compose up -d
+#
 # =============================================================================
 
 version: '3.8'
@@ -28,6 +34,67 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Dynamic Thread Pool Server (Standalone)
+  # ---------------------------------------------------------------------------
+  dt-server:
+    image: dynamic-thread-server:latest
+    container_name: dt-server
+    ports:
+      - "8080:8080"     # HTTP API (Dashboard + Actuator)
+      - "9527:9527"     # Netty TCP (Agent communication)
+    environment:
+      # --- Spring ---
+      - SPRING_PROFILES_ACTIVE=prod
+      - SERVER_PORT=8080
+      # --- JVM (override defaults from Dockerfile) ---
+      - JVM_XMS=${JVM_XMS:-512m}
+      - JVM_XMX=${JVM_XMX:-512m}
+      - JVM_MAX_DIRECT_MEMORY=${JVM_MAX_DIRECT_MEMORY:-128m}
+      - JVM_METASPACE=${JVM_METASPACE:-128m}
+      - JVM_MAX_METASPACE=${JVM_MAX_METASPACE:-128m}
+      - JVM_CODE_CACHE=${JVM_CODE_CACHE:-64m}
+      # --- Dashboard Auth ---
+      - DASHBOARD_USERNAME=${DASHBOARD_USERNAME:-admin}
+      - DASHBOARD_PASSWORD=${DASHBOARD_PASSWORD:-admin123}
+      # --- Netty ---
+      - NETTY_PORT=9527
+      - NETTY_WORKER_THREADS=${NETTY_WORKER_THREADS:-4}
+      - NETTY_SSL_ENABLED=${NETTY_SSL_ENABLED:-false}
+      - NETTY_SSL_CERT_PATH=${NETTY_SSL_CERT_PATH:-}
+      - NETTY_SSL_KEY_PATH=${NETTY_SSL_KEY_PATH:-}
+      # --- Security ---
+      - MAX_CONNECTIONS=${MAX_CONNECTIONS:-10000}
+      - MAX_CONNECTIONS_PER_IP=${MAX_CONNECTIONS_PER_IP:-100}
+      - MAX_CONNECTIONS_PER_APP=${MAX_CONNECTIONS_PER_APP:-500}
+      - CONNECT_RATE_LIMIT=${CONNECT_RATE_LIMIT:-60}
+      - MAX_LOGIN_ATTEMPTS=${MAX_LOGIN_ATTEMPTS:-5}
+      - LOGIN_LOCKOUT_MINUTES=${LOGIN_LOCKOUT_MINUTES:-15}
+      - AGENT_AUTH_ENABLED=${AGENT_AUTH_ENABLED:-false}
+      - AGENT_SECRET_KEY=${AGENT_SECRET_KEY:-dynamic-thread-default-secret-key-change-in-production}
+      # --- Notification ---
+      - DINGTALK_WEBHOOK=${DINGTALK_WEBHOOK:-}
+      - DINGTALK_SECRET=${DINGTALK_SECRET:-}
+      - WECHAT_WEBHOOK=${WECHAT_WEBHOOK:-}
+      - EMAIL_SMTP_HOST=${EMAIL_SMTP_HOST:-}
+      - EMAIL_SMTP_PORT=${EMAIL_SMTP_PORT:-}
+      - EMAIL_USERNAME=${EMAIL_USERNAME:-}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD:-}
+      - EMAIL_FROM=${EMAIL_FROM:-}
+      - EMAIL_TO=${EMAIL_TO:-}
+      - EMAIL_SSL=${EMAIL_SSL:-}
+      # --- Cluster (disabled for standalone) ---
+      - CLUSTER_ENABLED=false
+      # --- Logging ---
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - LOG_PATH=/opt/logs
+    volumes:
+      - dt-server-logs:/opt/logs
+    depends_on:
+      nacos:
+        condition: service_healthy
     restart: unless-stopped
 
   # ---------------------------------------------------------------------------
@@ -67,3 +134,7 @@ services:
     depends_on:
       - prometheus
     restart: unless-stopped
+
+volumes:
+  dt-server-logs:
+    driver: local

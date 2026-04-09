@@ -6,6 +6,7 @@ import com.dynamic.thread.core.model.ThreadPoolState;
 import com.dynamic.thread.core.protocol.Message;
 import com.dynamic.thread.core.protocol.MessageType;
 import com.dynamic.thread.core.util.CommonComponents;
+import com.dynamic.thread.server.cluster.sync.DataSyncer;
 import com.dynamic.thread.server.registry.ClientRegistry;
 import com.dynamic.thread.server.security.ConnectionRateLimiter;
 import com.dynamic.thread.server.security.InputValidator;
@@ -41,6 +42,11 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Message> {
     private final ObjectMapper objectMapper;
     private final ConnectionRateLimiter rateLimiter;
     private final InputValidator inputValidator;
+
+    /**
+     * Data syncer for cluster mode (null when standalone)
+     */
+    private volatile DataSyncer dataSyncer;
     
     /**
      * Async executor for alarm processing to avoid blocking Netty threads
@@ -58,6 +64,13 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Message> {
         this.rateLimiter = rateLimiter;
         this.inputValidator = inputValidator;
         this.objectMapper = CommonComponents.objectMapper();
+    }
+
+    /**
+     * Set the data syncer for cluster mode support.
+     */
+    public void setDataSyncer(DataSyncer dataSyncer) {
+        this.dataSyncer = dataSyncer;
     }
 
     @Override
@@ -272,39 +285,68 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<Message> {
     }
 
     /**
-     * Send config update to a specific instance
-     * @return true if message was sent, false if client not connected
+     * Send config update to a specific instance.
+     * If the instance is local, send directly via Channel.
+     * If the instance is remote (cluster mode), forward via cluster transport.
+     * @return true if message was sent or forwarded, false if client not found
      */
     public boolean sendConfigUpdate(String instanceId, String configJson) {
-        Channel channel = clientRegistry.getChannel(instanceId);
+        // Try local first
+        Channel channel = clientRegistry.getLocalChannel(instanceId);
         if (channel != null && channel.isActive()) {
-            ClientRegistry.ClientInfo info = clientRegistry.getClient(instanceId);
+            ClientRegistry.ClientInfo info = clientRegistry.getLocalClient(instanceId);
             Message message = Message.configUpdate(info.getAppId(), instanceId, configJson);
             channel.writeAndFlush(message);
-            log.info("Config update sent to: {}", instanceId);
+            log.info("Config update sent to local instance: {}", instanceId);
             return true;
-        } else {
-            log.warn("Cannot send config update, client not connected: {}", instanceId);
-            return false;
         }
+
+        // Try remote forwarding (cluster mode)
+        if (dataSyncer != null) {
+            String remoteNodeId = clientRegistry.getRemoteNodeId(instanceId);
+            if (remoteNodeId != null) {
+                boolean forwarded = dataSyncer.forwardConfigUpdate(remoteNodeId, instanceId, configJson, MessageType.CONFIG_UPDATE);
+                if (forwarded) {
+                    log.info("Config update forwarded to node {} for instance: {}", remoteNodeId, instanceId);
+                    return true;
+                }
+            }
+        }
+
+        log.warn("Cannot send config update, client not connected: {}", instanceId);
+        return false;
     }
 
     /**
-     * Send web container config update to a specific instance
-     * @return true if message was sent, false if client not connected
+     * Send web container config update to a specific instance.
+     * Supports cluster forwarding.
+     * @return true if message was sent or forwarded, false if client not found
      */
     public boolean sendWebContainerConfigUpdate(String instanceId, String configJson) {
-        Channel channel = clientRegistry.getChannel(instanceId);
+        // Try local first
+        Channel channel = clientRegistry.getLocalChannel(instanceId);
         if (channel != null && channel.isActive()) {
-            ClientRegistry.ClientInfo info = clientRegistry.getClient(instanceId);
+            ClientRegistry.ClientInfo info = clientRegistry.getLocalClient(instanceId);
             Message message = Message.webContainerConfigUpdate(info.getAppId(), instanceId, configJson);
             channel.writeAndFlush(message);
-            log.info("Web container config update sent to: {}", instanceId);
+            log.info("Web container config update sent to local instance: {}", instanceId);
             return true;
-        } else {
-            log.warn("Cannot send web container config update, client not connected: {}", instanceId);
-            return false;
         }
+
+        // Try remote forwarding (cluster mode)
+        if (dataSyncer != null) {
+            String remoteNodeId = clientRegistry.getRemoteNodeId(instanceId);
+            if (remoteNodeId != null) {
+                boolean forwarded = dataSyncer.forwardConfigUpdate(remoteNodeId, instanceId, configJson, MessageType.WEB_CONTAINER_CONFIG_UPDATE);
+                if (forwarded) {
+                    log.info("Web container config update forwarded to node {} for instance: {}", remoteNodeId, instanceId);
+                    return true;
+                }
+            }
+        }
+
+        log.warn("Cannot send web container config update, client not connected: {}", instanceId);
+        return false;
     }
 
     /**

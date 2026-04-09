@@ -3,6 +3,8 @@ package com.dynamic.thread.agent.config;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.List;
+
 /**
  * Configuration properties for Dynamic Thread Pool Agent.
  */
@@ -38,14 +40,20 @@ public class AgentProperties {
     @Data
     public static class ServerConfig {
         /**
-         * Dashboard server host
+         * Dashboard server host (single-node mode)
          */
         private String host = "127.0.0.1";
 
         /**
-         * Dashboard server port
+         * Dashboard server port (single-node mode)
          */
         private int port = 9527;
+
+        /**
+         * Multiple server addresses for cluster mode (e.g. ["192.168.1.101:9527","192.168.1.102:9527"])
+         * When configured, takes priority over host/port.
+         */
+        private List<String> addresses;
 
         /**
          * Connection timeout in milliseconds

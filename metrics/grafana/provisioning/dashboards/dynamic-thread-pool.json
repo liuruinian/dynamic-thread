@@ -1,11 +1,9 @@
 {
-  "annotations": {
-    "list": []
-  },
+  "annotations": { "list": [] },
   "description": "Dynamic Thread Pool Monitoring Dashboard",
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "id": null,
   "links": [],
   "liveNow": false,
@@ -48,7 +46,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "executor_active_threads{name=~\".*producer.*\"} / executor_pool_max_threads{name=~\".*producer.*\"} * 100",
+          "expr": "dynamic_thread_pool_active_percent{pool_id=~\".*producer.*\"}",
           "legendFormat": "Producer Active %",
           "refId": "A"
         }
@@ -86,7 +84,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "executor_queue_remaining_tasks{name=~\".*producer.*\"} / (executor_queue_remaining_tasks{name=~\".*producer.*\"} + executor_queued_tasks{name=~\".*producer.*\"}) * 100",
+          "expr": "dynamic_thread_pool_queue_usage_percent{pool_id=~\".*producer.*\"}",
           "legendFormat": "Producer Queue Usage %",
           "refId": "A"
         }
@@ -124,7 +122,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "executor_active_threads{name=~\".*consumer.*\"} / executor_pool_max_threads{name=~\".*consumer.*\"} * 100",
+          "expr": "dynamic_thread_pool_active_percent{pool_id=~\".*consumer.*\"}",
           "legendFormat": "Consumer Active %",
           "refId": "A"
         }
@@ -162,7 +160,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "executor_queued_tasks{name=~\".*consumer.*\"} / (executor_queue_remaining_tasks{name=~\".*consumer.*\"} + executor_queued_tasks{name=~\".*consumer.*\"}) * 100",
+          "expr": "dynamic_thread_pool_queue_usage_percent{pool_id=~\".*consumer.*\"}",
           "legendFormat": "Consumer Queue Usage %",
           "refId": "A"
         }
@@ -184,31 +182,18 @@
         "defaults": {
           "color": { "mode": "palette-classic" },
           "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
+            "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text",
+            "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0,
+            "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none",
             "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
-            "showPoints": "auto",
-            "spanNulls": false,
+            "insertNulls": false, "lineInterpolation": "smooth", "lineWidth": 2,
+            "pointSize": 5, "scaleDistribution": { "type": "linear" },
+            "showPoints": "auto", "spanNulls": false,
             "stacking": { "group": "A", "mode": "none" },
             "thresholdsStyle": { "mode": "off" }
           },
           "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [{ "color": "green", "value": null }]
-          },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
           "unit": "short"
         },
         "overrides": []
@@ -220,30 +205,10 @@
         "tooltip": { "mode": "multi", "sort": "none" }
       },
       "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "executor_pool_size_threads{name=~\".*producer.*\"}",
-          "legendFormat": "Pool Size",
-          "refId": "A"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "executor_active_threads{name=~\".*producer.*\"}",
-          "legendFormat": "Active Threads",
-          "refId": "B"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "executor_pool_core_threads{name=~\".*producer.*\"}",
-          "legendFormat": "Core Pool Size",
-          "refId": "C"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "executor_pool_max_threads{name=~\".*producer.*\"}",
-          "legendFormat": "Max Pool Size",
-          "refId": "D"
-        }
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "dynamic_thread_pool_pool_size{pool_id=~\".*producer.*\"}", "legendFormat": "Pool Size", "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "dynamic_thread_pool_active_count{pool_id=~\".*producer.*\"}", "legendFormat": "Active Threads", "refId": "B" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "dynamic_thread_pool_core_pool_size{pool_id=~\".*producer.*\"}", "legendFormat": "Core Pool Size", "refId": "C" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "dynamic_thread_pool_maximum_pool_size{pool_id=~\".*producer.*\"}", "legendFormat": "Max Pool Size", "refId": "D" }
       ],
       "title": "Producer Thread Pool",
       "type": "timeseries"
@@ -254,31 +219,18 @@
         "defaults": {
           "color": { "mode": "palette-classic" },
           "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
+            "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text",
+            "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0,
+            "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none",
             "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
-            "showPoints": "auto",
-            "spanNulls": false,
+            "insertNulls": false, "lineInterpolation": "smooth", "lineWidth": 2,
+            "pointSize": 5, "scaleDistribution": { "type": "linear" },
+            "showPoints": "auto", "spanNulls": false,
             "stacking": { "group": "A", "mode": "none" },
             "thresholdsStyle": { "mode": "off" }
           },
           "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [{ "color": "green", "value": null }]
-          },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
           "unit": "short"
         },
         "overrides": []
@@ -290,30 +242,10 @@
         "tooltip": { "mode": "multi", "sort": "none" }
       },
       "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "executor_pool_size_threads{name=~\".*consumer.*\"}",
-          "legendFormat": "Pool Size",
-          "refId": "A"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "executor_active_threads{name=~\".*consumer.*\"}",
-          "legendFormat": "Active Threads",
-          "refId": "B"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "executor_pool_core_threads{name=~\".*consumer.*\"}",
-          "legendFormat": "Core Pool Size",
-          "refId": "C"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "executor_pool_max_threads{name=~\".*consumer.*\"}",
-          "legendFormat": "Max Pool Size",
-          "refId": "D"
-        }
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "dynamic_thread_pool_pool_size{pool_id=~\".*consumer.*\"}", "legendFormat": "Pool Size", "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "dynamic_thread_pool_active_count{pool_id=~\".*consumer.*\"}", "legendFormat": "Active Threads", "refId": "B" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "dynamic_thread_pool_core_pool_size{pool_id=~\".*consumer.*\"}", "legendFormat": "Core Pool Size", "refId": "C" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "dynamic_thread_pool_maximum_pool_size{pool_id=~\".*consumer.*\"}", "legendFormat": "Max Pool Size", "refId": "D" }
       ],
       "title": "Consumer Thread Pool",
       "type": "timeseries"
@@ -332,31 +264,18 @@
         "defaults": {
           "color": { "mode": "palette-classic" },
           "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 20,
-            "gradientMode": "opacity",
+            "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text",
+            "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0,
+            "drawStyle": "line", "fillOpacity": 20, "gradientMode": "opacity",
             "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
-            "showPoints": "never",
-            "spanNulls": false,
+            "insertNulls": false, "lineInterpolation": "smooth", "lineWidth": 2,
+            "pointSize": 5, "scaleDistribution": { "type": "linear" },
+            "showPoints": "never", "spanNulls": false,
             "stacking": { "group": "A", "mode": "none" },
             "thresholdsStyle": { "mode": "off" }
           },
           "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [{ "color": "green", "value": null }]
-          },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
           "unit": "short"
         },
         "overrides": []
@@ -368,18 +287,8 @@
         "tooltip": { "mode": "multi", "sort": "none" }
       },
       "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "executor_queued_tasks{name=~\".*producer.*\"}",
-          "legendFormat": "Producer Queue Size",
-          "refId": "A"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "executor_queued_tasks{name=~\".*consumer.*\"}",
-          "legendFormat": "Consumer Queue Size",
-          "refId": "B"
-        }
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "dynamic_thread_pool_queue_size{pool_id=~\".*producer.*\"}", "legendFormat": "Producer Queue Size", "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "dynamic_thread_pool_queue_size{pool_id=~\".*consumer.*\"}", "legendFormat": "Consumer Queue Size", "refId": "B" }
       ],
       "title": "Queue Size",
       "type": "timeseries"
@@ -390,31 +299,18 @@
         "defaults": {
           "color": { "mode": "palette-classic" },
           "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 20,
-            "gradientMode": "opacity",
+            "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text",
+            "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0,
+            "drawStyle": "line", "fillOpacity": 20, "gradientMode": "opacity",
             "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
-            "showPoints": "never",
-            "spanNulls": false,
+            "insertNulls": false, "lineInterpolation": "smooth", "lineWidth": 2,
+            "pointSize": 5, "scaleDistribution": { "type": "linear" },
+            "showPoints": "never", "spanNulls": false,
             "stacking": { "group": "A", "mode": "none" },
             "thresholdsStyle": { "mode": "off" }
           },
           "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [{ "color": "green", "value": null }]
-          },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
           "unit": "short"
         },
         "overrides": []
@@ -426,20 +322,10 @@
         "tooltip": { "mode": "multi", "sort": "none" }
       },
       "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "rate(executor_completed_tasks_total{name=~\".*producer.*\"}[1m])",
-          "legendFormat": "Producer Tasks/min",
-          "refId": "A"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "rate(executor_completed_tasks_total{name=~\".*consumer.*\"}[1m])",
-          "legendFormat": "Consumer Tasks/min",
-          "refId": "B"
-        }
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "dynamic_thread_pool_completed_task_count{pool_id=~\".*producer.*\"}", "legendFormat": "Producer Completed", "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "dynamic_thread_pool_completed_task_count{pool_id=~\".*consumer.*\"}", "legendFormat": "Consumer Completed", "refId": "B" }
       ],
-      "title": "Task Throughput",
+      "title": "Completed Tasks",
       "type": "timeseries"
     },
     {
@@ -452,158 +338,154 @@
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "thresholds" },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [{ "color": "green", "value": null }]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }, "unit": "short" }, "overrides": [] },
       "gridPos": { "h": 4, "w": 6, "x": 0, "y": 26 },
       "id": 13,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showPercentChange": false, "textMode": "auto", "wideLayout": true },
       "pluginVersion": "10.4.0",
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "executor_completed_tasks_total{name=~\".*producer.*\"}",
-          "legendFormat": "Total",
-          "refId": "A"
-        }
-      ],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "dynamic_thread_pool_completed_task_count{pool_id=~\".*producer.*\"}", "legendFormat": "Total", "refId": "A" }],
       "title": "Producer Completed Tasks",
       "type": "stat"
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "thresholds" },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [{ "color": "green", "value": null }]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }, "unit": "short" }, "overrides": [] },
       "gridPos": { "h": 4, "w": 6, "x": 6, "y": 26 },
       "id": 14,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showPercentChange": false, "textMode": "auto", "wideLayout": true },
       "pluginVersion": "10.4.0",
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "executor_completed_tasks_total{name=~\".*consumer.*\"}",
-          "legendFormat": "Total",
-          "refId": "A"
-        }
-      ],
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "dynamic_thread_pool_completed_task_count{pool_id=~\".*consumer.*\"}", "legendFormat": "Total", "refId": "A" }],
       "title": "Consumer Completed Tasks",
       "type": "stat"
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "thresholds" },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": null },
-              { "color": "red", "value": 1 }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }, "unit": "short" }, "overrides": [] },
       "gridPos": { "h": 4, "w": 6, "x": 12, "y": 26 },
       "id": 15,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showPercentChange": false, "textMode": "auto", "wideLayout": true },
       "pluginVersion": "10.4.0",
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "increase(executor_rejected_tasks_total{name=~\".*\"}[5m])",
-          "legendFormat": "{{name}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Rejected Tasks (5m)",
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "dynamic_thread_pool_rejected_count", "legendFormat": "{{pool_id}}", "refId": "A" }],
+      "title": "Rejected Tasks",
       "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }, "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 26 },
+      "id": 16,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showPercentChange": false, "textMode": "auto", "wideLayout": true },
+      "pluginVersion": "10.4.0",
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "count(dynamic_thread_pool_pool_size)", "legendFormat": "Total", "refId": "A" }],
+      "title": "Thread Pool Count",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 30 },
+      "id": 17,
+      "panels": [],
+      "title": "Web Container Thread Pool",
+      "type": "row"
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "thresholds" },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [{ "color": "blue", "value": null }]
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text",
+            "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0,
+            "drawStyle": "line", "fillOpacity": 10, "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false, "lineInterpolation": "smooth", "lineWidth": 2,
+            "pointSize": 5, "scaleDistribution": { "type": "linear" },
+            "showPoints": "auto", "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
           },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 26 },
-      "id": 16,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 31 },
+      "id": 18,
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
+        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "web_container_pool_size", "legendFormat": "Pool Size", "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "web_container_active_count", "legendFormat": "Active Threads", "refId": "B" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "web_container_core_pool_size", "legendFormat": "Core Pool Size", "refId": "C" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "web_container_maximum_pool_size", "legendFormat": "Max Pool Size", "refId": "D" }
+      ],
+      "title": "Web Container Thread Pool",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "red", "value": 80 }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 31 },
+      "id": 19,
+      "options": {
         "orientation": "auto",
         "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
       },
       "pluginVersion": "10.4.0",
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "count(executor_pool_size_threads)",
-          "legendFormat": "Total",
-          "refId": "A"
-        }
-      ],
-      "title": "Thread Pool Count",
-      "type": "stat"
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "web_container_active_percent", "legendFormat": "Active %", "refId": "A" }],
+      "title": "Web Container Active Rate",
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "red", "value": 80 }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 31 },
+      "id": 20,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "10.4.0",
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "web_container_queue_usage_percent", "legendFormat": "Queue Usage %", "refId": "A" }],
+      "title": "Web Container Queue Usage",
+      "type": "gauge"
     }
   ],
   "refresh": "5s",
@@ -615,6 +497,6 @@
   "timezone": "browser",
   "title": "Dynamic Thread Pool",
   "uid": "dynamic-thread-pool",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }

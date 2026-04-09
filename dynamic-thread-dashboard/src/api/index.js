@@ -429,4 +429,27 @@ export const serverApi = {
   }
 }
 
+// 集群管理 API
+export const clusterApi = {
+  // 获取集群概览
+  info() {
+    return api.get('/api/cluster/info')
+  },
+  
+  // 获取所有集群节点
+  nodes() {
+    return api.get('/api/cluster/nodes')
+  },
+  
+  // 获取单个节点详情
+  node(nodeId) {
+    return api.get(`/api/cluster/nodes/${nodeId}`)
+  },
+  
+  // 集群健康检查
+  health() {
+    return api.get('/api/cluster/health')
+  }
+}
+
 export default api

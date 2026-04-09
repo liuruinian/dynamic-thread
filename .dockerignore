@@ -1,0 +1,41 @@
+# =============================================================================
+# Docker Build Context Exclusions
+# =============================================================================
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# Build output
+**/target/
+!dynamic-thread-server/target/
+
+# Git
+.git/
+.gitignore
+
+# Docker
+docker-compose*.yml
+Dockerfile
+.dockerignore
+
+# Documentation
+*.md
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker volumes
+docker/nacos/logs/
+
+# Metrics config (not needed in build)
+metrics/

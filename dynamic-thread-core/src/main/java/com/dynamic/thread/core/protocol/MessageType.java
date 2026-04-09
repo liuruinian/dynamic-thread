@@ -43,7 +43,44 @@ public enum MessageType {
     /**
      * Web container configuration update command from server
      */
-    WEB_CONTAINER_CONFIG_UPDATE((byte) 8);
+    WEB_CONTAINER_CONFIG_UPDATE((byte) 8),
+
+    // ==================== Cluster Messages ====================
+
+    /**
+     * Cluster node heartbeat
+     */
+    CLUSTER_HEARTBEAT((byte) 20),
+
+    /**
+     * Cluster full state sync request/response
+     */
+    CLUSTER_FULL_SYNC((byte) 21),
+
+    /**
+     * Cluster incremental state sync
+     */
+    CLUSTER_INCREMENTAL_SYNC((byte) 22),
+
+    /**
+     * Cluster config forward (relay config update to target node)
+     */
+    CLUSTER_CONFIG_FORWARD((byte) 23),
+
+    /**
+     * Cluster node join notification
+     */
+    CLUSTER_NODE_JOIN((byte) 24),
+
+    /**
+     * Cluster node leave notification
+     */
+    CLUSTER_NODE_LEAVE((byte) 25),
+
+    /**
+     * Cluster alarm rule sync
+     */
+    CLUSTER_ALARM_SYNC((byte) 26);
 
     private final byte code;
 
@@ -61,6 +98,6 @@ public enum MessageType {
                 return type;
             }
         }
-        throw new IllegalArgumentException("Unknown message type code: " + code);
+        return null;
     }
 }

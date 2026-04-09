@@ -1,0 +1,206 @@
+# =============================================================================
+# Dynamic Thread Pool - 3-Node Cluster Deployment
+# =============================================================================
+#
+# Usage:
+#   1. Build image via Maven:  mvn clean package -pl dynamic-thread-server -am
+#   2. Start cluster:          docker-compose -f docker-compose-cluster.yml up -d
+#
+# This configuration deploys a 3-node dynamic-thread-server cluster with:
+#   - Node 1: HTTP 8081, Agent 9527, Cluster 9528
+#   - Node 2: HTTP 8082, Agent 9537, Cluster 9538
+#   - Node 3: HTTP 8083, Agent 9547, Cluster 9548
+#
+# Agent configuration example:
+#   dynamic-thread:
+#     agent:
+#       server:
+#         addresses:
+#           - 192.168.1.x:9527
+#           - 192.168.1.x:9537
+#           - 192.168.1.x:9547
+# =============================================================================
+
+version: '3.8'
+
+# Shared environment variables (DRY)
+x-server-common: &server-common
+  image: dynamic-thread-server:latest
+  restart: unless-stopped
+  depends_on:
+    nacos:
+      condition: service_healthy
+
+x-server-env-common: &server-env-common
+  # --- Spring ---
+  SPRING_PROFILES_ACTIVE: prod
+  SERVER_PORT: "8080"
+  # --- JVM ---
+  JVM_XMS: "${JVM_XMS:-512m}"
+  JVM_XMX: "${JVM_XMX:-512m}"
+  JVM_MAX_DIRECT_MEMORY: "${JVM_MAX_DIRECT_MEMORY:-128m}"
+  JVM_METASPACE: "${JVM_METASPACE:-128m}"
+  JVM_MAX_METASPACE: "${JVM_MAX_METASPACE:-128m}"
+  JVM_CODE_CACHE: "${JVM_CODE_CACHE:-64m}"
+  # --- Dashboard Auth ---
+  DASHBOARD_USERNAME: "${DASHBOARD_USERNAME:-admin}"
+  DASHBOARD_PASSWORD: "${DASHBOARD_PASSWORD:-admin123}"
+  # --- Netty ---
+  NETTY_PORT: "9527"
+  NETTY_WORKER_THREADS: "${NETTY_WORKER_THREADS:-4}"
+  NETTY_SSL_ENABLED: "${NETTY_SSL_ENABLED:-false}"
+  NETTY_SSL_CERT_PATH: "${NETTY_SSL_CERT_PATH:-}"
+  NETTY_SSL_KEY_PATH: "${NETTY_SSL_KEY_PATH:-}"
+  # --- Security ---
+  MAX_CONNECTIONS: "${MAX_CONNECTIONS:-10000}"
+  MAX_CONNECTIONS_PER_IP: "${MAX_CONNECTIONS_PER_IP:-100}"
+  MAX_CONNECTIONS_PER_APP: "${MAX_CONNECTIONS_PER_APP:-500}"
+  CONNECT_RATE_LIMIT: "${CONNECT_RATE_LIMIT:-60}"
+  MAX_LOGIN_ATTEMPTS: "${MAX_LOGIN_ATTEMPTS:-5}"
+  LOGIN_LOCKOUT_MINUTES: "${LOGIN_LOCKOUT_MINUTES:-15}"
+  AGENT_AUTH_ENABLED: "${AGENT_AUTH_ENABLED:-false}"
+  AGENT_SECRET_KEY: "${AGENT_SECRET_KEY:-dynamic-thread-default-secret-key-change-in-production}"
+  # --- Notification ---
+  DINGTALK_WEBHOOK: "${DINGTALK_WEBHOOK:-}"
+  DINGTALK_SECRET: "${DINGTALK_SECRET:-}"
+  WECHAT_WEBHOOK: "${WECHAT_WEBHOOK:-}"
+  EMAIL_SMTP_HOST: "${EMAIL_SMTP_HOST:-}"
+  EMAIL_SMTP_PORT: "${EMAIL_SMTP_PORT:-}"
+  EMAIL_USERNAME: "${EMAIL_USERNAME:-}"
+  EMAIL_PASSWORD: "${EMAIL_PASSWORD:-}"
+  EMAIL_FROM: "${EMAIL_FROM:-}"
+  EMAIL_TO: "${EMAIL_TO:-}"
+  EMAIL_SSL: "${EMAIL_SSL:-}"
+  # --- Cluster Common ---
+  CLUSTER_ENABLED: "true"
+  CLUSTER_MEMBERS: "server-node1:9528,server-node2:9528,server-node3:9528"
+  CLUSTER_PORT: "9528"
+  CLUSTER_SYNC_INTERVAL: "${CLUSTER_SYNC_INTERVAL:-3000}"
+  CLUSTER_HEARTBEAT_INTERVAL: "${CLUSTER_HEARTBEAT_INTERVAL:-5000}"
+  CLUSTER_NODE_TIMEOUT: "${CLUSTER_NODE_TIMEOUT:-15000}"
+  # --- Logging ---
+  LOG_LEVEL: "${LOG_LEVEL:-DEBUG}"
+  LOG_PATH: "/opt/logs"
+
+services:
+  # ---------------------------------------------------------------------------
+  # Nacos Configuration Center
+  # ---------------------------------------------------------------------------
+  nacos:
+    image: docker.xuanyuan.run/nacos/nacos-server:v2.3.2
+    container_name: nacos-standalone
+    environment:
+      - PREFER_HOST_MODE=hostname
+      - MODE=standalone
+      - NACOS_AUTH_ENABLE=false
+      - JVM_XMS=512m
+      - JVM_XMX=512m
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+      - "9849:9849"
+    volumes:
+      - ./docker/nacos/logs:/home/nacos/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8848/nacos/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Dynamic Thread Server - Node 1
+  # ---------------------------------------------------------------------------
+  server-node1:
+    <<: *server-common
+    container_name: dt-server-node1
+    ports:
+      - "8081:8080"
+      - "9527:9527"
+      - "9528:9528"
+    environment:
+      <<: *server-env-common
+      CLUSTER_NODE_ID: "node-1"
+      CLUSTER_NODE_ADDRESS: "server-node1:9528"
+    volumes:
+      - node1-logs:/opt/logs
+
+  # ---------------------------------------------------------------------------
+  # Dynamic Thread Server - Node 2
+  # ---------------------------------------------------------------------------
+  server-node2:
+    <<: *server-common
+    container_name: dt-server-node2
+    ports:
+      - "8082:8080"
+      - "9537:9527"
+      - "9538:9528"
+    environment:
+      <<: *server-env-common
+      CLUSTER_NODE_ID: "node-2"
+      CLUSTER_NODE_ADDRESS: "server-node2:9528"
+    volumes:
+      - node2-logs:/opt/logs
+
+  # ---------------------------------------------------------------------------
+  # Dynamic Thread Server - Node 3
+  # ---------------------------------------------------------------------------
+  server-node3:
+    <<: *server-common
+    container_name: dt-server-node3
+    ports:
+      - "8083:8080"
+      - "9547:9527"
+      - "9548:9528"
+    environment:
+      <<: *server-env-common
+      CLUSTER_NODE_ID: "node-3"
+      CLUSTER_NODE_ADDRESS: "server-node3:9528"
+    volumes:
+      - node3-logs:/opt/logs
+
+  # ---------------------------------------------------------------------------
+  # Prometheus Metrics Collection
+  # ---------------------------------------------------------------------------
+  prometheus:
+    image: docker.xuanyuan.run/prom/prometheus:v2.51.0
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./metrics/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    depends_on:
+      nacos:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Grafana Visualization
+  # ---------------------------------------------------------------------------
+  grafana:
+    image: docker.xuanyuan.run/grafana/grafana:10.4.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin123}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/dynamic-thread-pool.json
+    volumes:
+      - ./metrics/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  node1-logs:
+    driver: local
+  node2-logs:
+    driver: local
+  node3-logs:
+    driver: local

@@ -76,6 +76,17 @@ dynamic-thread:
         fromAddress: ${EMAIL_FROM:}
         toAddresses: ${EMAIL_TO:}
         ssl: ${EMAIL_SSL:}
+    
+    # Cluster configuration (disabled by default for backward compatibility)
+    cluster:
+      enabled: ${CLUSTER_ENABLED:false}
+      node-id: ${CLUSTER_NODE_ID:}
+      node-address: ${CLUSTER_NODE_ADDRESS:}
+      cluster-port: ${CLUSTER_PORT:9528}
+      members: ${CLUSTER_MEMBERS:}
+      sync-interval-ms: ${CLUSTER_SYNC_INTERVAL:3000}
+      heartbeat-interval-ms: ${CLUSTER_HEARTBEAT_INTERVAL:5000}
+      node-timeout-ms: ${CLUSTER_NODE_TIMEOUT:15000}
 
 # -----------------------------------------------------------------------------
 # Logging Configuration (detailed config in logback-spring.xml)

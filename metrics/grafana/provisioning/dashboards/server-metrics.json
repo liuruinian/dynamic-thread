@@ -41,7 +41,7 @@
       "type": "gauge",
       "targets": [
         {
-          "expr": "system_cpu_usage{instance=\"dynamic-thread-server\"}",
+          "expr": "system_cpu_usage{job=\"dynamic-thread-server\"}",
           "legendFormat": "CPU"
         }
       ]
@@ -71,7 +71,7 @@
       "type": "gauge",
       "targets": [
         {
-          "expr": "system_memory_usage{instance=\"dynamic-thread-server\"}",
+          "expr": "system_memory_usage{job=\"dynamic-thread-server\"}",
           "legendFormat": "Memory"
         }
       ]
@@ -101,7 +101,7 @@
       "type": "gauge",
       "targets": [
         {
-          "expr": "max(system_disk_usage{instance=\"dynamic-thread-server\"})",
+          "expr": "max(system_disk_usage{job=\"dynamic-thread-server\"})",
           "legendFormat": "Disk"
         }
       ]
@@ -146,11 +146,11 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "jvm_memory_used_bytes{instance=\"dynamic-thread-server\", area=\"heap\"}",
+          "expr": "jvm_memory_used_bytes{job=\"dynamic-thread-server\", area=\"heap\"}",
           "legendFormat": "Used - {{id}}"
         },
         {
-          "expr": "jvm_memory_max_bytes{instance=\"dynamic-thread-server\", area=\"heap\"}",
+          "expr": "jvm_memory_max_bytes{job=\"dynamic-thread-server\", area=\"heap\"}",
           "legendFormat": "Max - {{id}}"
         }
       ]
@@ -170,15 +170,15 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "jvm_threads_live_threads{instance=\"dynamic-thread-server\"}",
+          "expr": "jvm_threads_live_threads{job=\"dynamic-thread-server\"}",
           "legendFormat": "Live Threads"
         },
         {
-          "expr": "jvm_threads_daemon_threads{instance=\"dynamic-thread-server\"}",
+          "expr": "jvm_threads_daemon_threads{job=\"dynamic-thread-server\"}",
           "legendFormat": "Daemon Threads"
         },
         {
-          "expr": "jvm_threads_peak_threads{instance=\"dynamic-thread-server\"}",
+          "expr": "jvm_threads_peak_threads{job=\"dynamic-thread-server\"}",
           "legendFormat": "Peak Threads"
         }
       ]
@@ -294,11 +294,11 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(system_network_receive_bytes{instance=\"dynamic-thread-server\"}[1m])",
+          "expr": "rate(system_network_receive_bytes{job=\"dynamic-thread-server\"}[1m])",
           "legendFormat": "Receive"
         },
         {
-          "expr": "rate(system_network_transmit_bytes{instance=\"dynamic-thread-server\"}[1m])",
+          "expr": "rate(system_network_transmit_bytes{job=\"dynamic-thread-server\"}[1m])",
           "legendFormat": "Transmit"
         }
       ]
@@ -318,11 +318,11 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(system_disk_read_bytes{instance=\"dynamic-thread-server\"}[1m])",
+          "expr": "rate(system_disk_read_bytes{job=\"dynamic-thread-server\"}[1m])",
           "legendFormat": "Read"
         },
         {
-          "expr": "rate(system_disk_write_bytes{instance=\"dynamic-thread-server\"}[1m])",
+          "expr": "rate(system_disk_write_bytes{job=\"dynamic-thread-server\"}[1m])",
           "legendFormat": "Write"
         }
       ]

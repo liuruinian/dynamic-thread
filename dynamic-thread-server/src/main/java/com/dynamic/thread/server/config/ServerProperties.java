@@ -30,6 +30,11 @@ public class ServerProperties {
     private final SecurityConfig security = new SecurityConfig();
 
     /**
+     * Cluster configuration
+     */
+    private final ClusterConfig cluster = new ClusterConfig();
+
+    /**
      * Notification platforms configuration
      */
     private List<Map<String, String>> notifyPlatforms = new ArrayList<>();
@@ -126,5 +131,48 @@ public class ServerProperties {
          * Enable agent authentication (HMAC signature validation)
          */
         private boolean agentAuthEnabled = false;
+    }
+
+    @Data
+    public static class ClusterConfig {
+        /**
+         * Enable cluster mode
+         */
+        private boolean enabled = false;
+
+        /**
+         * Current node ID (auto-generated if not specified)
+         */
+        private String nodeId;
+
+        /**
+         * Current node external address (ip:clusterPort)
+         */
+        private String nodeAddress;
+
+        /**
+         * Inter-node communication port
+         */
+        private int clusterPort = 9528;
+
+        /**
+         * Cluster member list (e.g., ["ip1:port1","ip2:port2"])
+         */
+        private List<String> members = new ArrayList<>();
+
+        /**
+         * Full sync interval in milliseconds
+         */
+        private int syncIntervalMs = 3000;
+
+        /**
+         * Node heartbeat interval in milliseconds
+         */
+        private int heartbeatIntervalMs = 5000;
+
+        /**
+         * Node timeout in milliseconds
+         */
+        private int nodeTimeoutMs = 15000;
     }
 }

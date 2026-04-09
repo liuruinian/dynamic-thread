@@ -19,6 +19,8 @@
     <!-- Skip publishing to Maven Central (standalone server application) -->
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <docker.image.name>dynamic-thread-server</docker.image.name>
+        <docker.image.tag>${project.version}</docker.image.tag>
     </properties>
 
     <dependencies>
@@ -99,6 +101,39 @@
                     <execution>
                         <goals>
                             <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Docker Image Build via fabric8 -->
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <configuration>
+                    <images>
+                        <image>
+                            <name>${docker.image.name}:${docker.image.tag}</name>
+                            <build>
+                                <dockerFileDir>${project.basedir}/src/main/docker</dockerFileDir>
+                                <assembly>
+                                    <descriptorRef>artifact</descriptorRef>
+                                </assembly>
+                                <tags>
+                                    <tag>${docker.image.tag}</tag>
+                                    <tag>latest</tag>
+                                </tags>
+                            </build>
+                        </image>
+                    </images>
+                </configuration>
+                <executions>
+                    <!-- mvn package => auto build image -->
+                    <execution>
+                        <id>docker-build</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build</goal>
                         </goals>
                     </execution>
                 </executions>
