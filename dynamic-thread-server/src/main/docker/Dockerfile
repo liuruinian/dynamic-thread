@@ -19,7 +19,7 @@
 #   docker run -d -e JVM_XMS=4g -e JVM_XMX=4g -p 8080:8080 -p 9527:9527 dynamic-thread-server:latest
 # =============================================================================
 
-FROM docker.xuanyuan.run/openjdk:8-jre-slim
+FROM docker.xuanyuan.run/bellsoft/liberica-openjdk-debian:8u482-10-cds
 
 LABEL maintainer="liuruinian <liuruinian@foxmail.com>"
 LABEL description="Dynamic Thread Pool Dashboard Server"
