@@ -24,6 +24,7 @@
 
     <modules>
         <module>nacos-cloud-example</module>
+        <module>nacos-cloud-example-1</module>
         <module>apollo-example</module>
         <module>file-example</module>
         <module>jdbc-example</module>
